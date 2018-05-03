@@ -54,12 +54,75 @@ GPMP2Interface::GPMP2Interface(ros::NodeHandle nh)
   // solve with batch gpmp2
   ROS_INFO("Optimizing...");
   int DOF = problem_.robot.getDOF();
-  if (!problem_.robot.isMobileBase())
-    batch_values_ = gpmp2::BatchTrajOptimize3DArm(problem_.robot.arm, problem_.sdf, problem_.start_conf, 
-      gtsam::Vector::Zero(DOF), problem_.goal_conf, gtsam::Vector::Zero(DOF), init_values_, problem_.opt_setting);
-  else
-    batch_values_ = gpmp2::BatchTrajOptimizePose2MobileArm(problem_.robot.marm, problem_.sdf, problem_.pstart, 
-      gtsam::Vector::Zero(DOF), problem_.pgoal, gtsam::Vector::Zero(DOF), init_values_, problem_.opt_setting);
+  if (nh.hasParam("traj_file")) {
+    std::string traj_file_;
+    nh.getParam("traj_file", traj_file_);
+    nh.getParam("fix_cartpose_sigma", fix_cartpose_sigma_);
+    nh.getParam("fix_cartorient_sigma", fix_cartorient_sigma_);
+    // get traj from file
+    ROS_INFO("Loading trajectory from file...");
+    problem_.readTrajectory(traj_file_);
+    int total_time_step = problem_.traj.size() - 1;
+    if (!problem_.robot.isMobileBase()) {
+      gtsam::noiseModel::Gaussian::shared_ptr cartpose_model = gtsam::noiseModel::Isotropic::Sigma(3, fix_cartpose_sigma_);
+      gtsam::noiseModel::Gaussian::shared_ptr cartorient_model = gtsam::noiseModel::Isotropic::Sigma(3, fix_cartorient_sigma_);
+
+      gtsam::NonlinearFactorGraph graph;
+      for (int i = 0; i < problem_.traj.size(); i++) {
+        gtsam::Key key_pos = gtsam::Symbol('x', i);
+        gtsam::Key key_vel = gtsam::Symbol('v', i);
+        /*if (i == 0)
+          graph.add(gpmp2::PriorFactorVector(key_vel, start_vel, vel_fix_model));
+	else if (i == total_time_step)
+          graph.add(gpmp2::PriorFactorVector(key_vel, end_vel, vel_fix_model)); */
+        gtsam::Point3 pose(problem_.traj[i][0],problem_.traj[i][1],problem_.traj[i][2]);
+        graph.add(gpmp2::GaussianPriorWorkspacePositionArm(key_pos, problem_.robot.arm, DOF-1, pose, cartpose_model));
+        gtsam::Rot3 orient = gtsam::Rot3::Quaternion(problem_.traj[i][6],problem_.traj[i][3],problem_.traj[i][4],problem_.traj[i][5]);
+        graph.add(gpmp2::GaussianPriorWorkspaceOrientationArm(key_pos, problem_.robot.arm, DOF-1, orient, cartorient_model));
+
+        // GP priors and cost factor
+        if (i > 0) {
+          gtsam::Key key_pos1 = gtsam::Symbol('x', i-1);
+          gtsam::Key key_pos2 = gtsam::Symbol('x', i);
+          gtsam::Key key_vel1 = gtsam::Symbol('v', i-1);
+          gtsam::Key key_vel2 = gtsam::Symbol('v', i);
+          graph.add(gpmp2::GaussianProcessPriorLinear(key_pos1, key_vel1, key_pos2, key_vel2, problem_.delta_t, problem_.opt_setting.Qc_model));
+
+          // Cost factor
+          graph.add(gpmp2::ObstacleSDFFactorArm(key_pos, problem_.robot.arm, problem_.sdf, problem_.cost_sigma, problem_.epsilon));
+
+          if (problem_.obs_check_inter > 0) {
+            double total_check_step = (problem_.obs_check_inter + 1.0) * double(total_time_step);
+            for (int j = 0; j < problem_.obs_check_inter; j++) {
+              double tau = j * (problem_.total_time / total_check_step);
+              graph.add(gpmp2::ObstacleSDFFactorGPArm(key_pos1, key_vel1, key_pos2, key_vel2, problem_.robot.arm, problem_.sdf, problem_.cost_sigma, problem_.epsilon, problem_.opt_setting.Qc_model, problem_.delta_t, tau));
+            }
+          }
+        }
+      }
+      gtsam::Values init_values = gpmp2::initArmTrajStraightLine(problem_.start_conf, problem_.goal_conf, total_time_step);
+ // init_values.insert(qkey, qinit);
+
+      gtsam::LevenbergMarquardtParams parameters;
+      parameters.setVerbosity("ERROR");
+      parameters.setVerbosityLM("LAMBDA");
+      parameters.setlambdaInitial(1000.0);
+      parameters.setMaxIterations(500);
+      gtsam::LevenbergMarquardtOptimizer optimizer(graph, init_values, parameters);
+  optimizer.optimize();
+      batch_values_ = optimizer.values();
+
+    } else {
+
+    }
+  } else {
+    if (!problem_.robot.isMobileBase())
+      batch_values_ = gpmp2::BatchTrajOptimize3DArm(problem_.robot.arm, problem_.sdf, problem_.start_conf, 
+        gtsam::Vector::Zero(DOF), problem_.goal_conf, gtsam::Vector::Zero(DOF), init_values_, problem_.opt_setting);
+    else
+      batch_values_ = gpmp2::BatchTrajOptimizePose2MobileArm(problem_.robot.marm, problem_.sdf, problem_.pstart, 
+        gtsam::Vector::Zero(DOF), problem_.pgoal, gtsam::Vector::Zero(DOF), init_values_, problem_.opt_setting);
+  }
   ROS_INFO("Batch GPMP2 optimization complete.");
 
   // publish trajectory for visualization or other use

@@ -87,4 +87,17 @@ Problem::Problem(ros::NodeHandle nh)
   }
 }
 
+void Problem::readTrajectory(std::string traj_file)
+{
+  std::ifstream file(traj_file);
+  std::string line;
+  //std::vector<std::vector<double>> traj;
+  while(getline(file, line)) {
+    std::istringstream is(line);
+    traj.push_back(std::vector<double>(std::istream_iterator<double>(is), std::istream_iterator<double>()));
+  }
+  file.close();
+}
+
+
 } // piper namespace
