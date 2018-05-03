@@ -68,13 +68,16 @@ GPMP2Interface::GPMP2Interface(ros::NodeHandle nh)
       gtsam::noiseModel::Gaussian::shared_ptr cartorient_model = gtsam::noiseModel::Isotropic::Sigma(3, fix_cartorient_sigma_);
 
       gtsam::NonlinearFactorGraph graph;
+      Vector start_vel = gtsam::Vector::Zero(DOF);
+      Vector end_vel = gtsam::Vector::Zero(DOF);
+
       for (int i = 0; i < problem_.traj.size(); i++) {
         gtsam::Key key_pos = gtsam::Symbol('x', i);
         gtsam::Key key_vel = gtsam::Symbol('v', i);
-        /*if (i == 0)
-          graph.add(gpmp2::PriorFactorVector(key_vel, start_vel, vel_fix_model));
+        if (i == 0)
+          graph.add(gtsam::PriorFactor<gtsam::Vector>(key_vel, start_vel, problem_.opt_setting.vel_prior_model));
 	else if (i == total_time_step)
-          graph.add(gpmp2::PriorFactorVector(key_vel, end_vel, vel_fix_model)); */
+          graph.add(gtsam::PriorFactor<gtsam::Vector>(key_vel, end_vel, problem_.opt_setting.vel_prior_model)); 
         gtsam::Point3 pose(problem_.traj[i][0],problem_.traj[i][1],problem_.traj[i][2]);
         graph.add(gpmp2::GaussianPriorWorkspacePositionArm(key_pos, problem_.robot.arm, DOF-1, pose, cartpose_model));
         gtsam::Rot3 orient = gtsam::Rot3::Quaternion(problem_.traj[i][6],problem_.traj[i][3],problem_.traj[i][4],problem_.traj[i][5]);

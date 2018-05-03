@@ -29,6 +29,7 @@
 #include <gtsam/nonlinear/NonlinearFactorGraph.h>
 #include <gtsam/nonlinear/LevenbergMarquardtOptimizer.h>
 #include <gtsam/nonlinear/Values.h>
+#include <gtsam/slam/PriorFactor.h>
 
 #include <problem.h>
 #include <traj.h>
