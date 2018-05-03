@@ -110,7 +110,9 @@ GPMP2Interface::GPMP2Interface(ros::NodeHandle nh)
       parameters.setVerbosity("ERROR");
       parameters.setVerbosityLM("LAMBDA");
       parameters.setlambdaInitial(1000.0);
+      //parameters.setlambdaUpperBound(1.0e10);
       parameters.setMaxIterations(500);
+      graph.print("Graph:\n");
       gtsam::LevenbergMarquardtOptimizer optimizer(graph, init_values, parameters);
   optimizer.optimize();
       batch_values_ = optimizer.values();
@@ -163,6 +165,7 @@ void GPMP2Interface::execute()
   ROS_INFO("Executing GPMP2 planned trajectory open-loop...");
   exec_step = problem_.total_step+problem_.control_inter*(problem_.total_step-1);
   traj_.executeTrajectory(exec_values_, problem_, exec_step);
+  exec_values_.print("Trajectory:\n"); 
 }
 
 /* ************************************************************************** */
