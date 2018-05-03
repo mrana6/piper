@@ -96,6 +96,9 @@ void Problem::readTrajectory(std::string traj_file)
     std::istringstream is(line);
     traj.push_back(std::vector<double>(std::istream_iterator<double>(is), std::istream_iterator<double>()));
   }
+  //for (int i = 0; i < traj.size(); i++)
+  //  ROS_INFO("%f, %f, %f, %f, %f, %f, %f", traj[i][0], traj[i][1], traj[i][2], traj[i][3], traj[i][4], traj[i][5], traj[i][6]);
+
   file.close();
 }
 
