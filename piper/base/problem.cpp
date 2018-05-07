@@ -98,6 +98,8 @@ void Problem::readTrajectory(std::string traj_file)
   }
   //for (int i = 0; i < traj.size(); i++)
   //  ROS_INFO("%f, %f, %f, %f, %f, %f, %f", traj[i][0], traj[i][1], traj[i][2], traj[i][3], traj[i][4], traj[i][5], traj[i][6]);
+  total_step = traj.size();
+  opt_setting.total_step = total_step-1;
 
   file.close();
 }

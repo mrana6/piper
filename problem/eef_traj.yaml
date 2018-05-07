@@ -14,7 +14,7 @@ piper:
   #sdf_file: sdf/vectorTableDataset.bin
   sdf_file: sdf/empty_sdf.bin
   total_time: 10.0
-  total_step: 26
+  total_step: 0
   obs_check_inter: 5
   control_inter: 5
   cost_sigma: 0.02
