@@ -82,7 +82,8 @@ GPMP2Interface::GPMP2Interface(ros::NodeHandle nh)
         gtsam::Point3 pose(problem_.traj[i][0],problem_.traj[i][1],problem_.traj[i][2]);
         graph.add(gpmp2::GaussianPriorWorkspacePositionArm(key_pos, problem_.robot.arm, DOF-1, pose, cartpose_model));
         gtsam::Rot3 orient = gtsam::Rot3::Quaternion(problem_.traj[i][6],problem_.traj[i][3],problem_.traj[i][4],problem_.traj[i][5]);
-        graph.add(gpmp2::GaussianPriorWorkspaceOrientationArm(key_pos, problem_.robot.arm, DOF-1, orient, cartorient_model));
+        gtsam::Rot3 orient_corrected = orient * gtsam::Rot3::Quaternion(0.5, -0.5, 0.5, -0.5);
+        graph.add(gpmp2::GaussianPriorWorkspaceOrientationArm(key_pos, problem_.robot.arm, DOF-1, orient_corrected, cartorient_model));
 
         problem_.delta_t = problem_.total_time / double(total_time_step);
         ROS_INFO("Delta t is %f", problem_.delta_t);
@@ -115,7 +116,6 @@ GPMP2Interface::GPMP2Interface(ros::NodeHandle nh)
       parameters.setlambdaInitial(1000.0);
       //parameters.setlambdaUpperBound(1.0e10);
       parameters.setMaxIterations(500);
-      //graph.print("Graph:\n");
       gtsam::LevenbergMarquardtOptimizer optimizer(graph, init_values, parameters);
   optimizer.optimize();
       batch_values_ = optimizer.values();
@@ -168,7 +168,6 @@ void GPMP2Interface::execute()
   ROS_INFO("Executing GPMP2 planned trajectory open-loop...");
   exec_step = problem_.total_step+problem_.control_inter*(problem_.total_step-1);
   traj_.executeTrajectory(exec_values_, problem_, exec_step);
-  //exec_values_.print("Trajectory:\n"); 
 }
 
 /* ************************************************************************** */
