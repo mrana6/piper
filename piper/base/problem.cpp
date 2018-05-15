@@ -27,8 +27,11 @@ Problem::Problem(ros::NodeHandle nh)
     if (robot.isThetaNeg())
       robot.negateTheta(start_conf);
   }
-  nh.getParam("goal_conf", gc_);
-  goal_conf = getVector(gc_);
+  if (nh.hasParam("goal_conf"))
+  {
+    nh.getParam("goal_conf", gc_);
+    goal_conf = getVector(gc_);
+  }
   if (robot.isThetaNeg())
     robot.negateTheta(goal_conf);
   if (robot.isMobileBase())
@@ -87,11 +90,23 @@ Problem::Problem(ros::NodeHandle nh)
   }
 }
 
-void Problem::readTrajectory(std::string traj_file)
+void Problem::readTrajectory(std::string traj_file, bool read_conf)
 {
   std::ifstream file(traj_file);
   std::string line;
   //std::vector<std::vector<double>> traj;
+  if(read_conf) {
+    getline(file, line);
+    std::string lineVals = line.substr(line.find(':')+1,line.size());
+    std::istringstream is_start(lineVals);
+    start_conf = getVector(std::vector<double>(std::istream_iterator<double>(is_start), std::istream_iterator<double>()));
+
+    getline(file, line);
+    lineVals = line.substr(line.find(':')+1,line.size());
+    std::istringstream is_goal(lineVals);
+    goal_conf = getVector(std::vector<double>(std::istream_iterator<double>(is_goal), std::istream_iterator<double>()));
+  }
+    
   while(getline(file, line)) {
     std::istringstream is(line);
     traj.push_back(std::vector<double>(std::istream_iterator<double>(is), std::istream_iterator<double>()));

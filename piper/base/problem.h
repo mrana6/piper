@@ -58,7 +58,7 @@ class Problem
     Problem(ros::NodeHandle nh);
 
     // Read workspace trajectory from file
-    void readTrajectory(std::string traj_file);
+    void readTrajectory(std::string traj_file, bool read_conf);
 
     /// Default destructor
     virtual ~Problem() {}

@@ -47,6 +47,16 @@ GPMP2Interface::GPMP2Interface(ros::NodeHandle nh)
       problem_.start_pose = base_pos_;
     problem_.pstart = gpmp2::Pose2Vector(problem_.start_pose, problem_.start_conf);
   }
+  if (nh.hasParam("traj_file")) {
+    std::string traj_file_;
+    nh.getParam("traj_file", traj_file_);
+    bool read_conf_ = false;
+    if (nh.hasParam("read_conf")) 
+      nh.getParam("read_conf", read_conf_);
+    // get traj from file
+    ROS_INFO("Loading trajectory from file...");
+    problem_.readTrajectory(traj_file_,read_conf_);
+  }
   
   // initialize trajectory
   traj_.initializeTrajectory(init_values_, problem_);
@@ -55,13 +65,21 @@ GPMP2Interface::GPMP2Interface(ros::NodeHandle nh)
   ROS_INFO("Optimizing...");
   int DOF = problem_.robot.getDOF();
   if (nh.hasParam("traj_file")) {
-    std::string traj_file_;
+    /*std::string traj_file_;
     nh.getParam("traj_file", traj_file_);
+    bool read_conf_ = false;
+    if (nh.hasParam("read_conf")) {
+      std::cout<<"has param"<<std::endl;
+      nh.getParam("read_conf", read_conf_);
+    } else
+      std::cout<<"no param"<<std::endl;
     nh.getParam("fix_cartpose_sigma", fix_cartpose_sigma_);
     nh.getParam("fix_cartorient_sigma", fix_cartorient_sigma_);
     // get traj from file
     ROS_INFO("Loading trajectory from file...");
-    problem_.readTrajectory(traj_file_);
+    problem_.readTrajectory(traj_file_,read_conf_);*/
+    nh.getParam("fix_cartpose_sigma", fix_cartpose_sigma_);
+    nh.getParam("fix_cartorient_sigma", fix_cartorient_sigma_);
     int total_time_step = problem_.traj.size() - 1;
     ROS_INFO("Total time step is %i", total_time_step);
     if (!problem_.robot.isMobileBase()) {
@@ -114,8 +132,8 @@ GPMP2Interface::GPMP2Interface(ros::NodeHandle nh)
       parameters.setVerbosity("ERROR");
       parameters.setVerbosityLM("LAMBDA");
       parameters.setlambdaInitial(1000.0);
-      //parameters.setlambdaUpperBound(1.0e10);
-      parameters.setMaxIterations(500);
+      parameters.setlambdaUpperBound(1.0e10);
+      parameters.setMaxIterations(700);
       gtsam::LevenbergMarquardtOptimizer optimizer(graph, init_values, parameters);
   optimizer.optimize();
       batch_values_ = optimizer.values();
