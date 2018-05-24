@@ -15,6 +15,10 @@
 #include <control_msgs/FollowJointTrajectoryAction.h>
 #include <actionlib/client/simple_action_client.h>
 #include <trajectory_msgs/JointTrajectory.h>
+#include <moveit_msgs/DisplayTrajectory.h>
+#include <moveit_msgs/RobotTrajectory.h>
+#include <moveit/robot_state/robot_state.h>
+#include <moveit/move_group_interface/move_group.h>
 
 #include <gtsam/nonlinear/Values.h>
 #include <gtsam/inference/Symbol.h>
@@ -32,13 +36,15 @@ class Traj
 {
   public:
     typedef actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> TrajClient;
-    ros::Publisher est_traj_pub, plan_traj_pub;
+    ros::Publisher est_traj_pub, plan_traj_pub, moveit_plan_traj_pub;
     std::vector<std::string> arm_joint_names;
 
   private:
-    std::string trajectory_control_topic_, est_traj_pub_topic_, plan_traj_pub_topic_;
+    std::string trajectory_control_topic_, est_traj_pub_topic_, plan_traj_pub_topic_, moveit_plan_traj_pub_topic_;
     TrajClient* traj_client_;
+    bool using_traj_client;
     control_msgs::FollowJointTrajectoryGoal traj_;
+    moveit_msgs::DisplayTrajectory display_traj_;
 
   public:
     /// Default constructor
