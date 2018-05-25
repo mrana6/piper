@@ -17,7 +17,8 @@ piper:
   #start_conf: [1.6146059925169725, 4.019845923134489, -0.5901192798853253, 5.241124993725752, -0.160636950105563, 4.22652293637507, 0.5563831541445285]
   #goal_conf: [1.6146139820002428, 3.8685408226466182, -0.7428713423724636, 5.3315297253540175, -0.18195277495725953, 4.683509128891653, 1.2621183795915183]
   #traj_file: /home/tesca/software/Vecor7DOF_testing/data/workspace/d20_eef_quat.txt
-  traj_file: /home/tesca/software/Vecor7DOF_testing/data/workspace/scoop23_dmp_quat_pos.txt
+  #traj_file: /home/tesca/software/Vecor7DOF_testing/data/workspace/scoop23_dmp_quat_pos.txt
+  traj_file: /home/tesca/data/tesca/user0_task0/traj5.txt
   read_conf: true
 
   sdf_file: sdf/vectorTableDataset.bin
