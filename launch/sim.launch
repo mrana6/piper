@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="robot" default="sim_7dof_jaco" />
+  <arg name="problem" default="eef_traj" />
+
+  <node name="gpmp2_interface" pkg="piper" type="gpmp2_interface" output="screen"/>
+
+  <rosparam command="delete" param="/piper/robot/trajectory_control_topic"/>
+  <rosparam command="load" file="$(find piper)/config/$(arg robot).yaml" />
+  <rosparam command="load" file="$(find piper)/problem/$(arg problem).yaml" />
+</launch>
