@@ -131,9 +131,9 @@ GPMP2Interface::GPMP2Interface(ros::NodeHandle nh)
       gtsam::LevenbergMarquardtParams parameters;
       parameters.setVerbosity("ERROR");
       parameters.setVerbosityLM("LAMBDA");
-      parameters.setlambdaInitial(1000.0);
+      parameters.setlambdaInitial(1200.0);
       parameters.setlambdaUpperBound(1.0e10);
-      parameters.setMaxIterations(700);
+      parameters.setMaxIterations(900);
       gtsam::LevenbergMarquardtOptimizer optimizer(graph, init_values, parameters);
   optimizer.optimize();
       batch_values_ = optimizer.values();
