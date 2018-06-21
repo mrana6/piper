@@ -46,6 +46,10 @@ Problem::Problem(ros::NodeHandle nh)
     pgoal = gpmp2::Pose2Vector(goal_pose, goal_conf);
   }
 
+  // trajectory output file
+  if (nh.hasParam("output_file"))
+    nh.getParam("output_file", output_file_);
+
   // signed distance field
   nh.getParam("sdf_file", sdf_file_);
   sdf_file_ = ros::package::getPath("piper") + "/" + sdf_file_;

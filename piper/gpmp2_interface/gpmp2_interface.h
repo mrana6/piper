@@ -51,6 +51,7 @@ class GPMP2Interface
     gtsam::Pose2 base_pos_;
     ros::Time arm_pos_time_, base_pos_time_;
     double fix_cartpose_sigma_, fix_cartorient_sigma_;
+    bool execute_traj_, write_traj_;
 
   public:
     /// Default constructor

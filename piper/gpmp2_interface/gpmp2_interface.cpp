@@ -34,6 +34,9 @@ GPMP2Interface::GPMP2Interface(ros::NodeHandle nh)
   }
   ros::Duration(1.0).sleep();
 
+  execute_traj_ = (nh.hasParam("robot/trajectory_control_topic") or nh.hasParam("robot/moveit_plan_traj_pub_topic"));
+  write_traj_ = nh.hasParam("output_file");
+
   // get start from measurement if not passed as param
   if (!nh.hasParam("start_conf"))
   {
@@ -185,7 +188,10 @@ void GPMP2Interface::execute()
   //  execute trajectory
   ROS_INFO("Executing GPMP2 planned trajectory open-loop...");
   exec_step = problem_.total_step+problem_.control_inter*(problem_.total_step-1);
-  traj_.executeTrajectory(exec_values_, problem_, exec_step);
+  if (write_traj_) 
+    traj_.writeTrajectory(exec_values_, problem_, exec_step);
+  if (execute_traj_)
+    traj_.executeTrajectory(exec_values_, problem_, exec_step);
 }
 
 /* ************************************************************************** */

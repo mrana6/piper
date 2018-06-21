@@ -93,6 +93,47 @@ void Traj::initializeTrajectory(gtsam::Values& init_values, Problem& problem)
   }
 }
 
+void Traj::writeTrajectory(gtsam::Values& exec_values, Problem& problem, size_t exec_step)
+{
+  gtsam::Pose2 pose;
+  gtsam::Vector conf, vel;
+  int DOF = problem.robot.getDOF();
+  int DOF_arm = problem.robot.getDOFarm();
+  std::string filename = problem.output_file_;
+
+  // create ros trajectory
+  traj_.trajectory.points.resize(exec_step);
+  std::ofstream outfile(filename);
+  for (size_t i=0; i<exec_step; i++)
+  {
+    std::string posStr = "";
+    std::string velStr = "";
+    if (i > 0)
+      outfile << "\n";
+    if (!problem.robot.isMobileBase())
+    {
+      traj_.trajectory.points[i].positions.resize(DOF_arm);
+      traj_.trajectory.points[i].velocities.resize(DOF_arm);      
+      conf = exec_values.at<gtsam::Vector>(gtsam::Symbol('x',i));
+      vel = exec_values.at<gtsam::Vector>(gtsam::Symbol('v',i));
+      if (problem.robot.isThetaNeg())
+        problem.robot.negateTheta(conf);
+      for (size_t j=0; j<DOF_arm; j++)
+      {
+        traj_.trajectory.points[i].positions[j] = conf[j];
+	posStr += std::to_string(conf[j]) + " ";
+        traj_.trajectory.points[i].velocities[j] = vel[j];
+	velStr += std::to_string(vel[j]) + " ";
+      }
+    }
+    traj_.trajectory.points[i].time_from_start = ros::Duration(i*problem.delta_t/(problem.control_inter+1));
+    outfile << posStr.substr(0, posStr.size() - 1) + "\n";
+    outfile << velStr.substr(0, velStr.size() - 1) + "\n";
+    outfile << traj_.trajectory.points[i].time_from_start;
+  }
+  outfile.close();
+}
+
 /* ************************************************************************** */
 void Traj::executeTrajectory(gtsam::Values& exec_values, Problem& problem, size_t exec_step)
 {

@@ -39,6 +39,7 @@ class Problem
     int total_step, obs_check_inter, control_inter;
     gpmp2::TrajOptimizerSetting opt_setting;
     std::vector<std::vector<double>> traj;
+    std::string output_file_;
     
   private:
     std::vector<double> sc_, gc_, sp_, gp_;

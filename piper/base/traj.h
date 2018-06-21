@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <string>
+#include <fstream>
 
 #include <ros/ros.h>
 #include <control_msgs/FollowJointTrajectoryAction.h>
@@ -68,6 +69,15 @@ class Traj
      **/
     void initializeTrajectory(gtsam::Values& init_values, Problem& problem);
     
+    /**
+     *  write trajectory to file
+     *
+     *  @param exec_values optimized, interpolated, and collision checked traj to execute
+     *  @param problem all problem params and settings
+     *  @param exec_step number of points on the trajectory
+     **/
+    void writeTrajectory(gtsam::Values& exec_values, Problem& problem, size_t exec_step);
+
     /**
      *  initialize trajectory for optimization
      *
