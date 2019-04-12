@@ -1,0 +1,23 @@
+piper:
+  robot:
+    DOF: 7
+    arm_base: {orientation: [0, 0, 0, 1], position: [0.033, 0, 0.726]}
+    DH:
+      alpha: [-1.5708, -1.5708, 1.5708, -1.5708, 1.5708, -1.5708, 0]
+      a: [0.117, 0, 0, 0, 0, 0, 0]
+      d: [0.06, 0, 0.352, 0, 0.3215, 0, 0.30495]
+      theta: [0, -1.5708, 0, 0, 0, 0, 0]
+      theta_neg: [false, false, false, false, false, false]
+    spheres:
+      js: [0,1,2,3,4,5,6]
+      xs: [0,0,0,0,0,0,0]
+      ys: [0,0,0,0,0,0,0]
+      zs: [0,0,0,0,0,0,0]
+      rs: [0.01,0.01,0.01,0.01,0.01,0.01,0.01]
+    arm_joint_names: [shoulder_pan_joint, shoulder_lift_joint, upperarm_roll_joint, elbow_flex_joint, 
+                        forearm_roll_joint, wrist_flex_joint, wrist_roll_joint]
+    sensor_arm_sigma: 0.0001
+    trajectory_control_topic: /arm_controller/follow_joint_trajectory
+    est_traj_pub_topic: /piper/est_traj
+    plan_traj_pub_topic: /piper/plan_traj
+    arm_state_topic: /joint_states

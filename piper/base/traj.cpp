@@ -189,7 +189,7 @@ void Traj::executeTrajectory(gtsam::Values& exec_values, Problem& problem, size_
   //moveit::core::RobotState rs(*group.getCurrentState());
   //robotStateToRobotStateMsg(rs, display_traj_.trajectory_start);
   //display_traj_.trajectory_start = rs;// group.getCurrentState();
-  moveit_plan_traj_pub.publish(display_traj_);
+  //moveit_plan_traj_pub.publish(display_traj_);
   if (using_traj_client) {
     traj_client_->sendGoal(traj_);
     traj_client_->waitForResult();
