@@ -2,29 +2,15 @@ piper:
   start_pose: [0, 0, 0]
   goal_pose: [0, 0, 0]
 
-  #For scoop13:
-  #start_conf: [-1.8299938654935133, 1.7499940643239729, -0.6500227271703558, 1.3099082929660426, 0.2600128284268717, 4.479913410603431, -0.8200239873213118]
-  #goal_conf: [-2.4248465763502187,1.666398581192087,0.4162146405579079,0.5865603214228519,0.635006139111757,2.536397411828154,-0.18952164797494242]
-  #traj_file: /home/tesca/software/Vecor7DOF_testing/data/workspace/scoop13_bl_quat.txt
+  #For hat_reach:
+  start_conf: [1.60517731706, -0.416938478551, 2.71645797496, 0.791172502393, 0.269659725458, 2.0819469834, 1.3784506785]
+  goal_conf: [1.57373038331, -0.377438480459, 2.69728339915, 1.3069734553, 0.250101087124, 1.63517488486, 1.23272209039]
+  traj_file: /home/asif/fetch_ws/src/piper/data/eef/hat_reach.txt
+  #output_file: /home/tesca/data/corl18/reorg/trajectories/test_output.txt
+  read_conf: false
 
-  #For scoop23:
-  #start_conf:  [-2.4248465763502187,1.666398581192087,0.4162146405579079,0.5865603214228519,0.635006139111757,2.536397411828154,-0.18952164797494242]
-  #end_conf: [0.320874098378337,2.0759001167948945,-0.13459777346347007,0.7503480781098963,-0.24743206495916928,1.5025751787597466,1.4562600094699716]
-  #traj_file: /home/tesca/software/Vecor7DOF_testing/data/workspace/scoop23_bl_quat.txt
-  #sdf_file: sdf/vectorTableDataset.bin
-
-  #For scoop bag file:
-  #start_conf: [1.6146059925169725, 4.019845923134489, -0.5901192798853253, 5.241124993725752, -0.160636950105563, 4.22652293637507, 0.5563831541445285]
-  #goal_conf: [1.6146139820002428, 3.8685408226466182, -0.7428713423724636, 5.3315297253540175, -0.18195277495725953, 4.683509128891653, 1.2621183795915183]
-  #traj_file: /home/tesca/software/Vecor7DOF_testing/data/workspace/d20_eef_quat.txt
-  #traj_file: /home/tesca/software/Vecor7DOF_testing/data/workspace/scoop23_dmp_quat_pos.txt
-  traj_file: /home/tesca/data/corl18/dmps/hammer/user2_task0/c0/traj0.txt
-  #traj_file: /home/tesca/data/tesca/user17_task0/target/traj3.txt
-  output_file: /home/tesca/data/corl18/reorg/trajectories/test_output.txt
-  read_conf: true
-
-  sdf_file: sdf/lowerVectorTableDataset.bin
-  #sdf_file: sdf/empty_sdf.bin
+  #sdf_file: sdf/lowerVectorTableDataset.bin
+  sdf_file: sdf/empty_sdf.bin
   total_time: 10.0
   total_step: 0
   obs_check_inter: 5

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="robot" default="fetch" />
-  <arg name="problem" default="example_fetch" />
+  <arg name="problem" default="eef_traj" />
 
   <node name="gpmp2_interface" pkg="piper" type="gpmp2_interface" output="screen" />
 
