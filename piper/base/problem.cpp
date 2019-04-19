@@ -119,9 +119,18 @@ void Problem::readTrajectory(std::string traj_file, bool read_conf)
    ROS_INFO("%f, %f, %f, %f, %f, %f, %f", traj[i][0], traj[i][1], traj[i][2], traj[i][3], traj[i][4], traj[i][5], traj[i][6]);
   total_step = traj.size();
   opt_setting.total_step = total_step-1;
-  std::cin.get();
 
   file.close();
+}
+
+void copyMsgToTrajectory(geometry_msgs::PoseArray waypoints){
+  pose_list = waypoints.poses;
+
+  for(int i=0; i<pose_list.size(); i++){
+    traj.pushback()
+
+  }
+
 }
 
 

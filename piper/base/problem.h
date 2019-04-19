@@ -14,6 +14,7 @@
 
 #include <ros/ros.h>
 #include <ros/package.h>
+#include <geometry_msgs/PoseArray.h>
 
 #include <gtsam/geometry/Pose2.h>
 #include <gpmp2/geometry/Pose2Vector.h>
@@ -60,6 +61,9 @@ class Problem
 
     // Read workspace trajectory from file
     void readTrajectory(std::string traj_file, bool read_conf);
+
+    // copy from geometry_msg to trajectory
+    void copyMsgToTrajectory(geometry_msgs::PoseArray waypoints);
 
     /// Default destructor
     virtual ~Problem() {}

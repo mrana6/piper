@@ -20,6 +20,24 @@ find_package(catkin REQUIRED COMPONENTS
   trajectory_msgs
 )
 
+################################################
+## Declare ROS messages, services and actions ##
+################################################
+
+
+add_action_files(FILES
+        ConstrainedManipulation.action
+)
+
+## Generate added messages and services with any dependencies listed here
+generate_messages(
+        DEPENDENCIES
+        actionlib_msgs
+        geometry_msgs
+	trajectory_msgs
+)
+
+
 # C++11 flags for GTSAM 4.0
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 
@@ -79,10 +97,13 @@ endif()
 if(BUILD_GPMP2_INTERFACE)
   include_directories(piper/gpmp2_interface/)
 
-  file(GLOB GPMP2_INTERFACE_SRC "piper/gpmp2_interface/*.cpp")
+  file(GLOB GPMP2_INTERFACE_SRC "piper/gpmp2_interface/gpmp2_interface.cpp")
   add_executable(gpmp2_interface ${GPMP2_INTERFACE_SRC})
 
+  add_executable(constrained_manipulator "piper/gpmp2_interface/constrained_manipulator.cpp")
+
   target_link_libraries(gpmp2_interface piperbase)
+  target_link_libraries(constrained_manipulator piperbase ${catkin_LIBRARIES})
 
   install(TARGETS gpmp2_interface
     RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

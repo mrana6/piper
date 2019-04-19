@@ -1,0 +1,8 @@
+# Cartesian waypoints for end-effector
+geometry_msgs/PoseArray waypoints
+---
+# Result
+bool plan_success
+bool execution_success
+trajectory_msgs/JointTrajectory planned_trajectory
+---
