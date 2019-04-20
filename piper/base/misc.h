@@ -33,6 +33,21 @@ static const gtsam::Vector getVector(const std::vector<double>& v)
 }
 
 /**
+ *  Convert gtsam Vector to std vector
+ *
+ *  @param v std double vector
+ **/
+static const std::vector<double> getStdVector(const gtsam::Vector& v)
+{
+	std::vector<double> send;
+	for(size_t i=0; i<v.size(); i++){
+		send.push_back(v[i]);
+	}
+  return send;
+}
+
+
+/**
  *  CTRL+C handling
  **/
 static void sigintHandler(int sig)

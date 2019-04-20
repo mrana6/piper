@@ -123,13 +123,20 @@ void Problem::readTrajectory(std::string traj_file, bool read_conf)
   file.close();
 }
 
-void copyMsgToTrajectory(geometry_msgs::PoseArray waypoints){
-  pose_list = waypoints.poses;
-
+void Problem::copyMsgToTrajectory(geometry_msgs::PoseArray waypoints){
+  std::vector<geometry_msgs::Pose> pose_list = waypoints.poses;
+  std::vector<double> temp;
+  // pose_list = waypoints.poses;
   for(int i=0; i<pose_list.size(); i++){
-    traj.pushback()
+    temp = {pose_list[i].position.x, pose_list[i].position.y, pose_list[i].position.z,
+                        pose_list[i].orientation.x, pose_list[i].orientation.y, pose_list[i].orientation.z,pose_list[i].orientation.w};
+    traj.push_back(temp);
 
   }
+  // for (int i = 0; i < traj.size(); i++)
+  //  ROS_INFO("%f, %f, %f, %f, %f, %f, %f", traj[i][0], traj[i][1], traj[i][2], traj[i][3], traj[i][4], traj[i][5], traj[i][6]);
+  total_step = traj.size();
+  opt_setting.total_step = total_step-1;
 
 }
 

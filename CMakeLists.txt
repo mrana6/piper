@@ -14,10 +14,12 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   control_msgs
   actionlib
+  actionlib_msgs
   roslib
   sensor_msgs
   geometry_msgs
   trajectory_msgs
+  moveit_msgs
 )
 
 ################################################
@@ -101,9 +103,12 @@ if(BUILD_GPMP2_INTERFACE)
   add_executable(gpmp2_interface ${GPMP2_INTERFACE_SRC})
 
   add_executable(constrained_manipulator "piper/gpmp2_interface/constrained_manipulator.cpp")
+  add_executable(constrained_manipulation_client "piper/gpmp2_interface/constrained_manipulation_client.cpp")
+
 
   target_link_libraries(gpmp2_interface piperbase)
   target_link_libraries(constrained_manipulator piperbase ${catkin_LIBRARIES})
+  target_link_libraries(constrained_manipulation_client piperbase ${catkin_LIBRARIES})
 
   install(TARGETS gpmp2_interface
     RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

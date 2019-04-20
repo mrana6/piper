@@ -14,6 +14,7 @@
 
 #include <ros/ros.h>
 #include <ros/package.h>
+ #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseArray.h>
 
 #include <gtsam/geometry/Pose2.h>

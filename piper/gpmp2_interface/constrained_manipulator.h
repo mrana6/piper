@@ -1,8 +1,10 @@
 #ifndef CONSTRAINED_MANIPULATOR_H
 #define CONSTRAINED_MANIPULATOR_H
+#include <bits/stdc++.h> 
 
 #include <actionlib/server/simple_action_server.h>
 #include <piper/ConstrainedManipulationAction.h>
+#include <moveit_msgs/ExecuteTrajectoryAction.h>
 
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
@@ -24,14 +26,23 @@
 #include <gtsam/nonlinear/Values.h>
 #include <gtsam/slam/PriorFactor.h>
 
+#include <hlpr_trac_ik/IKHandler.h>
+
+
 #include <problem.h>
 #include <traj.h>
 #include <misc.h>
 
+typedef actionlib::SimpleActionServer<piper::ConstrainedManipulationAction> Server;
+
+
+namespace piper {
+
 class ConstrainedManipulator
 {
 public:
-	ConstrainedManipulator();
+	// ConstrainedManipulator() {}
+    ConstrainedManipulator(ros::NodeHandle nh_);
 
 private:
     Problem problem_;
@@ -44,12 +55,18 @@ private:
     gtsam::Pose2 base_pos_;
     ros::Time arm_pos_time_, base_pos_time_;
     double fix_cartpose_sigma_, fix_cartorient_sigma_;
-    bool execute_traj_, write_traj_;
+    bool execute_traj_, write_traj_, current_start_conf, find_goal_conf; 
 
-	ros::NodeHandle nh_;
-	actionlib::SimpleActionServer<piper::ConstrainedManipulationAction> constrained_manipulation_server_;
+	// ros::NodeHandle nh_;
 	void armStateCallback(const sensor_msgs::JointState::ConstPtr& msg);
-	void execute(const piper::ConstrainedManipulationGoalConstPtr &goal);
+    void executeCallback(const piper::ConstrainedManipulationGoalConstPtr &goal);
+
+
+    actionlib::SimpleActionServer<piper::ConstrainedManipulationAction> constrained_manipulation_server_;
+    ros::ServiceClient trac_ik_client_;
+
 };
+
+}
 
 #endif  // CONSTRAINED_MANIPULATOR_H
