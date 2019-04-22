@@ -1,7 +1,7 @@
 piper:
   robot:
     DOF: 7
-    arm_base: {orientation: [0, 0, 0, 1], position: [0.033, 0, 0.726]}
+    arm_base: {orientation: [0, 0, 0, 1], position: [0.033, 0, 0.726]} #base to shoulder_pan offset
     DH:
       alpha: [-1.5708, -1.5708, 1.5708, -1.5708, 1.5708, -1.5708, 0]
       a: [0.117, 0, 0, 0, 0, 0, 0]
@@ -14,7 +14,7 @@ piper:
       ys: [0,0,0,0,0,0,0]
       zs: [0,0,0,0,0,0,0]
       rs: [0.01,0.01,0.01,0.01,0.01,0.01,0.01]
-    arm_joint_names: [shoulder_pan_joint, shoulder_lift_joint, upperarm_roll_joint, elbow_flex_joint, 
+    arm_joint_names: [shoulder_pan_joint, shoulder_lift_joint, upperarm_roll_joint, elbow_flex_joint,
                         forearm_roll_joint, wrist_flex_joint, wrist_roll_joint]
     sensor_arm_sigma: 0.0001
     trajectory_control_topic: /arm_controller/follow_joint_trajectory

@@ -11,6 +11,10 @@
 #include <std_msgs/Bool.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseArray.h>
+#include <tf2_ros/transform_listener.h>
+#include <geometry_msgs/TransformStamped.h>
+#include <geometry_msgs/Vector3.h>
+
 
 #include <gpmp2/planner/BatchTrajOptimizer.h>
 #include <gpmp2/planner/TrajUtils.h>
@@ -55,11 +59,20 @@ private:
     gtsam::Pose2 base_pos_;
     ros::Time arm_pos_time_, base_pos_time_;
     double fix_cartpose_sigma_, fix_cartorient_sigma_;
-    bool execute_traj_, write_traj_, current_start_conf, find_goal_conf; 
+    bool execute_traj_, write_traj_, use_current_start_conf, find_goal_conf; 
+    
+    //NOTE: HACK FOR FETCH ONLY!
+    std::vector<double> base_shoulder_offset_;
+    tf2_ros::Buffer tf_buffer_;
+    tf2_ros::TransformListener tf_listener_;
+    // 
+
+
 
 	// ros::NodeHandle nh_;
 	void armStateCallback(const sensor_msgs::JointState::ConstPtr& msg);
     void executeCallback(const piper::ConstrainedManipulationGoalConstPtr &goal);
+    void execute();
 
 
     actionlib::SimpleActionServer<piper::ConstrainedManipulationAction> constrained_manipulation_server_;

@@ -20,6 +20,8 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   trajectory_msgs
   moveit_msgs
+  tf2
+  tf2_ros
 )
 
 ################################################
