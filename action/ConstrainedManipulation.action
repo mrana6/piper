@@ -1,4 +1,6 @@
 # Cartesian waypoints for end-effector
+float64[] start_conf
+float64[] goal_conf
 geometry_msgs/PoseArray waypoints
 ---
 # Result

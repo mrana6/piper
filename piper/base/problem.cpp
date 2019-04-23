@@ -81,6 +81,8 @@ Problem::Problem(ros::NodeHandle nh)
   opt_setting.Qc_model = gtsam::noiseModel::Gaussian::Covariance(Qc_*gtsam::Matrix::Identity(DOF, DOF));
   opt_setting.conf_prior_model = gtsam::noiseModel::Isotropic::Sigma(DOF, fix_pose_sigma_);
   opt_setting.vel_prior_model = gtsam::noiseModel::Isotropic::Sigma(DOF, fix_vel_sigma_);
+
+
   if (opt_type_ == "LM")
     opt_setting.opt_type = gpmp2::TrajOptimizerSetting::LM;
   else if (opt_type_ == "Dogleg")
@@ -135,8 +137,11 @@ void Problem::copyMsgToTrajectory(geometry_msgs::PoseArray waypoints){
   }
   // for (int i = 0; i < traj.size(); i++)
   //  ROS_INFO("%f, %f, %f, %f, %f, %f, %f", traj[i][0], traj[i][1], traj[i][2], traj[i][3], traj[i][4], traj[i][5], traj[i][6]);
-  total_step = traj.size();
+  
+  //NOT SURE IF WE SHOULD DO THIS??
+  total_step = static_cast<int> (traj.size());
   opt_setting.total_step = total_step-1;
+  delta_t = total_time/(total_step-1);
 
 }
 
