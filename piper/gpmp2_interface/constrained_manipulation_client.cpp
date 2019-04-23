@@ -66,7 +66,7 @@ FetchConstrainedManipulator::FetchConstrainedManipulator(ros::NodeHandle nh) :
 
    	//ros::topic::waitForMessage<sensor_msgs::JointState>("/joint_states", nh);
     
-   	ros::spinOnce();
+   	//ros::spinOnce();
 }
 
 /* *************************************************************************** */
@@ -81,9 +81,6 @@ void FetchConstrainedManipulator::sendGoal(std::string waypoint_file)
 	goal.waypoints = waypoints;
 	goal.goal_conf = goal_conf_;
 	goal.start_conf = current_conf_;
-
-
-	std::cout<<goal_conf_.size()<<std::endl;
 
   	manipulation_client_.sendGoal(goal);
   	manipulation_client_.waitForResult(ros::Duration(5.0));
@@ -189,10 +186,14 @@ void FetchConstrainedManipulator::findGoalConf()
 int main(int argc, char** argv)
 {
 	ros::init(argc, argv, "constrained_manipulation_client");
+	ros::MultiThreadedSpinner spinner(0);
+
 	ros::NodeHandle nh;
 
 	FetchConstrainedManipulator fetch_constrained_manipulator(nh);
 	fetch_constrained_manipulator.sendGoal("/home/asif/fetch_ws/src/piper/data/eef/test.txt");
+
+	spinner.spin();
 
 	// ros::spin();
 
