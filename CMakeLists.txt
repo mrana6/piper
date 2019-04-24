@@ -22,6 +22,9 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_msgs
   tf2
   tf2_ros
+  moveit_ros_planning_interface
+  moveit_core
+  moveit_ros_planning
 )
 
 ################################################

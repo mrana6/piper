@@ -104,7 +104,7 @@ void ConstrainedManipulator::plan(gtsam::Vector start_conf, gtsam::Vector goal_c
 	    	graph.add(gtsam::PriorFactor<gtsam::Vector>(key_vel, gtsam::Vector::Zero(DOF), problem_.opt_setting.vel_prior_model));
 	  	}
 		else if (i == problem_.opt_setting.total_step){
-			//graph.add(gtsam::PriorFactor<gtsam::Vector>(key_pos, problem_.goal_conf, problem_.opt_setting.conf_prior_model));
+			// graph.add(gtsam::PriorFactor<gtsam::Vector>(key_pos, problem_.goal_conf, problem_.opt_setting.conf_prior_model));
 	      	graph.add(gtsam::PriorFactor<gtsam::Vector>(key_vel, gtsam::Vector::Zero(DOF), problem_.opt_setting.vel_prior_model)); 
 	    }
 
