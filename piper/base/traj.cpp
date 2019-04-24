@@ -72,7 +72,7 @@ void Traj::initializeTrajectory(gtsam::Values& init_values, Problem& problem)
       conf = (1.0 - ratio)*problem.start_conf + ratio*problem.goal_conf;
       init_values.insert(gtsam::Symbol('x',i), conf);
       init_values.insert(gtsam::Symbol('v',i), avg_vel);
-      ROS_INFO("Conf value: %f, %f, %f, %f, %f, %f, %f", conf[0], conf[1],conf[2],conf[3],conf[4],conf[5],conf[6]);
+      // ROS_INFO("Conf value: %f, %f, %f, %f, %f, %f, %f", conf[0], conf[1],conf[2],conf[3],conf[4],conf[5],conf[6]);
     }
   }
   else

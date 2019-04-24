@@ -31,9 +31,13 @@ Robot::Robot(ros::NodeHandle nh)
   nh.getParam("robot/DH/a", a_);
   nh.getParam("robot/DH/alpha", alpha_);
   nh.getParam("robot/DH/d", d_);
+
   nh.getParam("robot/DH/theta", theta_);
   if (nh.hasParam("robot/DH/theta_neg"))
     nh.getParam("robot/DH/theta_neg", theta_neg_);
+  if (nh.hasParam("robot/eef_orientation_offset"))
+    nh.getParam("robot/eef_orientation_offset", eef_orientation_offset_);
+
   nh.getParam("robot/spheres/js", js_);
   nh.getParam("robot/spheres/xs", xs_);
   nh.getParam("robot/spheres/ys", ys_);
@@ -77,6 +81,16 @@ void Robot::negateTheta(gtsam::Vector& conf)
   for (size_t i=0; i<conf.size(); i++)
     if (theta_neg_[i])
       conf[i] *= -1.0;
+}
+
+/* ************************************************************************** */
+void Robot::offsetOrientation(gtsam::Rot3& orient_mat)
+{
+    // ROS_INFO("Offset %f, %f, %f, %f", eef_orientation_offset_[0],eef_orientation_offset_[1],eef_orientation_offset_[2],eef_orientation_offset_[3]);
+    orient_mat = orient_mat * gtsam::Rot3::Quaternion(eef_orientation_offset_[0], 
+                                                  eef_orientation_offset_[1], 
+                                                  eef_orientation_offset_[2], 
+                                                  eef_orientation_offset_[3]);
 }
 
 } // piper namespace

@@ -34,6 +34,7 @@ class Robot
     std::vector<double> a_, alpha_, d_, theta_;
     std::vector<bool> theta_neg_;
     std::vector<double> orientation_, position_;
+    std::vector<double> eef_orientation_offset_; //quaternion orientation error b/w FK using DH params and that using URDF 
     gtsam::Pose3 arm_base_;
     std::vector<double> js_, xs_, ys_, zs_, rs_;
     gpmp2::BodySphereVector spheres_data_;    
@@ -64,12 +65,24 @@ class Robot
     /// theta offset in DH params has a sign flip
     inline bool isThetaNeg() const { return !theta_neg_.empty(); }
 
+    /// orientation offset present in the FK of gpmp2 compared to the real robot
+    inline bool isOrientationOffset() const { return !eef_orientation_offset_.empty(); }
+
     /**
      *  Flip sign of theta in DH parameters
      *
      *  @param conf change conf to account for theta bias
      **/
     void negateTheta(gtsam::Vector& conf);
+
+
+    /**
+     *  Add an offset in the rotation 
+     *
+     *  @param orientation rotation matrix
+     **/
+
+    void offsetOrientation(gtsam::Rot3& orient_mat);
 };
 
 } // piper namespace

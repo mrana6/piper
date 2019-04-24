@@ -103,16 +103,17 @@ void FetchConstrainedManipulator::sendGoal(std::string waypoint_file)
 	// goToPose(start_pose);
 
 	ros::Duration(2.0).sleep();
-	// geometry_msgs::Pose goal_pose = waypoints.poses.back();
-	// goal_conf_ = getIK(goal_pose);
+	geometry_msgs::Pose goal_pose = waypoints.poses.back();
+	goal_conf_ = getIK(goal_pose);
 
-	goal_conf_ = {1.57373038331, -0.377438480459, 2.69728339915, 1.3069734553, 0.250101087124, 1.63517488486, 1.23272209039};
+	// goal_conf_ = {1.57373038331, -0.377438480459, 2.69728339915, 1.3069734553, 0.250101087124, 1.63517488486, 1.23272209039};
 
 
 	piper::ConstrainedManipulationGoal goal;
 	goal.waypoints = waypoints;
 	goal.goal_conf = goal_conf_;
-	goal.start_conf = {1.60517731706, -0.416938478551, 2.71645797496, 0.791172502393, 0.269659725458, 2.0819469834, 1.3784506785};//current_conf_;
+	goal.start_conf = current_conf_;
+	// goal.start_conf = {1.60517731706, -0.416938478551, 2.71645797496, 0.791172502393, 0.269659725458, 2.0819469834, 1.3784506785};//current_conf_;
 
   	manipulation_client_.sendGoal(goal);
   	manipulation_client_.waitForResult(ros::Duration(5.0));
@@ -125,8 +126,8 @@ void FetchConstrainedManipulator::sendGoal(std::string waypoint_file)
 
 void FetchConstrainedManipulator::goToPose(geometry_msgs::Pose goal_pose)
 {
-	//std::vector<double> conf = getIK(goal_pose);
-	std::vector<double> conf = {1.60517731706, -0.416938478551, 2.71645797496, 0.791172502393, 0.269659725458, 2.0819469834, 1.3784506785};
+	std::vector<double> conf = getIK(goal_pose);
+	// std::vector<double> conf = {1.60517731706, -0.416938478551, 2.71645797496, 0.791172502393, 0.269659725458, 2.0819469834, 1.3784506785};
 
 	size_t index;
 	for (size_t i=0; i<arm_joint_names_.size(); i++)
@@ -259,7 +260,7 @@ int main(int argc, char** argv)
 	ros::NodeHandle nh;
 
 	FetchConstrainedManipulator fetch_constrained_manipulator(nh);
-	fetch_constrained_manipulator.sendGoal("/home/asif/fetch_ws/src/piper/data/eef/hat_reach.txt");
+	fetch_constrained_manipulator.sendGoal("/home/asif/fetch_ws/src/piper/data/eef/urdf/hat_reach.txt");
 
 	spinner.spin();
 

@@ -112,6 +112,13 @@ void ConstrainedManipulator::plan(gtsam::Vector start_conf, gtsam::Vector goal_c
 	    graph.add(gpmp2::GaussianPriorWorkspacePositionArm(key_pos, problem_.robot.arm, DOF-1, pose, cartpose_model));
 	    
 	    gtsam::Rot3 orient = gtsam::Rot3::Quaternion(problem_.traj[i][6],problem_.traj[i][3],problem_.traj[i][4],problem_.traj[i][5]);
+	    
+	    if (problem_.robot.isOrientationOffset()){
+			problem_.robot.offsetOrientation(orient);
+		}
+
+	    // orient = orient * gtsam::Rot3::Quaternion(0, 0.7071, 0, 0.7071);
+
 	    graph.add(gpmp2::GaussianPriorWorkspaceOrientationArm(key_pos, problem_.robot.arm, DOF-1, orient, cartorient_model));
 
 	    
