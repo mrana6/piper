@@ -48,6 +48,29 @@ static const std::vector<double> getStdVector(const gtsam::Vector& v)
 
 
 /**
+ *  Multiplu two quaternions
+ *
+ *  @param q, r std double vector of quaternions of the format [w,x,y,z]
+ **/
+static const std::vector<double> quatmultiply(const std::vector<double>& q, std::vector<double>& r) 
+{
+std::vector<double> vec;
+double scalar;
+
+vec = {q[0]*r[1] + r[0]*q[1] + q[2]*r[3]-q[3]*r[2],
+        q[0]*r[2] + r[0]*q[2] + q[3]*r[1]-q[1]*r[3],
+          q[0]*r[3] + r[0]*q[3] + q[1]*r[2]-q[2]*r[1]};
+
+scalar = q[0]*r[0] - q[1]*r[1] - q[2]*r[2] - q[3]*r[3];
+
+std::vector<double> qout;
+qout = vec;
+qout.insert(qout.begin(), scalar);
+
+return qout;
+}
+
+/**
  *  CTRL+C handling
  **/
 static void sigintHandler(int sig)

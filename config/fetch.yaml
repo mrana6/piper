@@ -2,6 +2,7 @@ piper:
   robot:
     DOF: 7
     arm_base: {orientation: [0, 0, 0, 1], position: [0.03265, 0, 0.72601]} #base to shoulder_pan offset
+    # arm_base: {orientation: [0, 0, 0, 1], position: [0.033, 0, 0.726]} #base to shoulder_pan offset
     eef_orientation_offset: [0, 0.7071, 0, 0.7071] # this to fix orientation error b/w FK using DH params and that using URDF 
     DH:
       alpha: [-1.5708, -1.5708, 1.5708, -1.5708, 1.5708, -1.5708, 0]

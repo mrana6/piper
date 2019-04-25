@@ -42,6 +42,7 @@ private:
 	std::vector<std::string> arm_joint_names_;
 
 	std::vector<double> current_conf_;  //current robot configuration
+	std::vector<double> start_conf_;	// conf to start optimization from 
 	std::vector<double> goal_conf_;     // goal configuraiton 
 
 	tf2_ros::Buffer tf_buffer_;
@@ -56,7 +57,7 @@ private:
     void readWaypointsFromFile(std::string filename);
     void armStateCallback(const sensor_msgs::JointState::ConstPtr& msg);
     std::vector<double> getIK(geometry_msgs::Pose goal_pose);
-    void goToPose(geometry_msgs::Pose goal_pose);
+    void goToJointPose(std::vector<double> conf);
 
 
 public:
@@ -100,19 +101,28 @@ void FetchConstrainedManipulator::sendGoal(std::string waypoint_file)
 	readWaypointsFromFile(waypoint_file);
 
 	geometry_msgs::Pose start_pose = waypoints.poses[0];
-	// goToPose(start_pose);
+	// start_conf_ = getIK(start_pose);
+	// start_conf_ = {1.480381, -0.519910, 2.330502, 0.773411, 0.576692, 2.159374, 1.160902};
+	start_conf_ = {1.60517731706, -0.416938478551, 2.71645797496, 0.791172502393, 0.269659725458, 2.0819469834, 1.3784506785};//current_conf_;
+
+	// goToJointPose(start_conf_);
 
 	ros::Duration(2.0).sleep();
-	geometry_msgs::Pose goal_pose = waypoints.poses.back();
-	goal_conf_ = getIK(goal_pose);
 
-	// goal_conf_ = {1.57373038331, -0.377438480459, 2.69728339915, 1.3069734553, 0.250101087124, 1.63517488486, 1.23272209039};
+	geometry_msgs::Pose goal_pose = waypoints.poses.back();
+	// goal_conf_ = getIK(goal_pose);
+	// goal_conf_ = {1.364771, -0.558937, 2.354118, 1.267287, 0.581348, 1.774089, 0.915123};
+	goal_conf_ = {1.57373038331, -0.377438480459, 2.69728339915, 1.3069734553, 0.250101087124, 1.63517488486, 1.23272209039};
+
+
+	// goToPose(goal_pose);
+
 
 
 	piper::ConstrainedManipulationGoal goal;
 	goal.waypoints = waypoints;
 	goal.goal_conf = goal_conf_;
-	goal.start_conf = current_conf_;
+	goal.start_conf = start_conf_;
 	// goal.start_conf = {1.60517731706, -0.416938478551, 2.71645797496, 0.791172502393, 0.269659725458, 2.0819469834, 1.3784506785};//current_conf_;
 
   	manipulation_client_.sendGoal(goal);
@@ -124,9 +134,9 @@ void FetchConstrainedManipulator::sendGoal(std::string waypoint_file)
 
 /* *************************************************************************** */
 
-void FetchConstrainedManipulator::goToPose(geometry_msgs::Pose goal_pose)
+void FetchConstrainedManipulator::goToJointPose(std::vector<double> conf)
 {
-	std::vector<double> conf = getIK(goal_pose);
+
 	// std::vector<double> conf = {1.60517731706, -0.416938478551, 2.71645797496, 0.791172502393, 0.269659725458, 2.0819469834, 1.3784506785};
 
 	size_t index;
@@ -221,12 +231,12 @@ std::vector<double> FetchConstrainedManipulator::getIK(geometry_msgs::Pose goal_
 
 	hlpr_trac_ik::IKHandler ik_srv;
 
-	std::vector<float> start_conf(current_conf_.begin(), current_conf_.end());
+	std::vector<float> ik_seed(current_conf_.begin(), current_conf_.end());
 
     ik_srv.request.goals = goal_vec;
-  	ik_srv.request.origin = start_conf;
+  	ik_srv.request.origin = ik_seed;
 
-	ik_srv.request.tolerance = {0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001};
+	ik_srv.request.tolerance = {0.00001, 0.00001, 0.00001, 0.00001, 0.00001, 0.00001};
   	ik_srv.request.verbose = true;
 
   	std::vector<double> conf;

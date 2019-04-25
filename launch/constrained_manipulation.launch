@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="robot" default="fetch" />
-  <arg name="problem" default="eef_traj" />
+  <arg name="problem" default="constrained_manipulation" />
 
   <node name="constrained_manipulator" pkg="piper" type="constrained_manipulator" output="screen" />
 

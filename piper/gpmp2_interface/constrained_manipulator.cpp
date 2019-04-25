@@ -54,7 +54,7 @@ void ConstrainedManipulator::executeCallback(const piper::ConstrainedManipulatio
 
 	ConstrainedManipulator::plan(start_conf, goal_conf, manipulation_goal->waypoints);
 
-	ConstrainedManipulator::execute();
+	// ConstrainedManipulator::execute();
 
 	piper::ConstrainedManipulationResult result;
 	result.plan_success = true;
@@ -80,8 +80,8 @@ void ConstrainedManipulator::plan(gtsam::Vector start_conf, gtsam::Vector goal_c
 
 	// initialize trajectory
 	traj_.initializeTrajectory(init_values_, problem_);
+	// init_values_ = gpmp2::initArmTrajStraightLine(problem_.start_conf, problem_.goal_conf, problem_.opt_setting.total_step);
 
-    // gtsam::Values init_values = gpmp2::initArmTrajStraightLine(problem_.start_conf, problem_.goal_conf, total_time_step);
 	// ADD FACTORS BETWEEN CARTESIAN WAYPOINTS!!??
 
 	// solve with batch gpmp2
@@ -89,16 +89,21 @@ void ConstrainedManipulator::plan(gtsam::Vector start_conf, gtsam::Vector goal_c
 	int DOF = problem_.robot.getDOF();
 	ROS_INFO("Total time step is %i", static_cast<int>(problem_.opt_setting.total_step));
 	ROS_INFO("Delta t is %f", problem_.delta_t);
+	ROS_INFO("Arm DOF: %i", DOF);
 
 	gtsam::noiseModel::Gaussian::shared_ptr cartpose_model = gtsam::noiseModel::Isotropic::Sigma(3, fix_cartpose_sigma_);
 	gtsam::noiseModel::Gaussian::shared_ptr cartorient_model = gtsam::noiseModel::Isotropic::Sigma(3, fix_cartorient_sigma_);
 
 	gtsam::NonlinearFactorGraph graph;
 
+	std::vector<double> quat;
+	std::vector<double> quat_offset = {0, 0.7071, 0, 0.7071};
+
 	for (size_t i = 0; i <= problem_.opt_setting.total_step; i++) {
 	    gtsam::Key key_pos = gtsam::Symbol('x', i);
 	    gtsam::Key key_vel = gtsam::Symbol('v', i);
 	    
+	    // Adding init conf constraint is conflicting. I dont know why!!!
 	    if (i == 0){
 	    	graph.add(gtsam::PriorFactor<gtsam::Vector>(key_pos, problem_.start_conf, problem_.opt_setting.conf_prior_model));
 	    	graph.add(gtsam::PriorFactor<gtsam::Vector>(key_vel, gtsam::Vector::Zero(DOF), problem_.opt_setting.vel_prior_model));
@@ -108,20 +113,29 @@ void ConstrainedManipulator::plan(gtsam::Vector start_conf, gtsam::Vector goal_c
 	      	graph.add(gtsam::PriorFactor<gtsam::Vector>(key_vel, gtsam::Vector::Zero(DOF), problem_.opt_setting.vel_prior_model)); 
 	    }
 
-	    gtsam::Point3 pose(problem_.traj[i][0],problem_.traj[i][1],problem_.traj[i][2]);
-	    graph.add(gpmp2::GaussianPriorWorkspacePositionArm(key_pos, problem_.robot.arm, DOF-1, pose, cartpose_model));
-	    
-	    gtsam::Rot3 orient = gtsam::Rot3::Quaternion(problem_.traj[i][6],problem_.traj[i][3],problem_.traj[i][4],problem_.traj[i][5]);
-	    
-	    if (problem_.robot.isOrientationOffset()){
-			problem_.robot.offsetOrientation(orient);
-		}
+    	      // Cost factor
+      graph.add(gpmp2::ObstacleSDFFactorArm(key_pos, problem_.robot.arm, problem_.sdf, problem_.cost_sigma, problem_.epsilon));
 
-	    // orient = orient * gtsam::Rot3::Quaternion(0, 0.7071, 0, 0.7071);
+      //workspace factor
+      gtsam::Point3 pose(problem_.traj[i][0],problem_.traj[i][1],problem_.traj[i][2]);
+	  graph.add(gpmp2::GaussianPriorWorkspacePositionArm(key_pos, problem_.robot.arm, DOF-1, pose, cartpose_model));
 
-	    graph.add(gpmp2::GaussianPriorWorkspaceOrientationArm(key_pos, problem_.robot.arm, DOF-1, orient, cartorient_model));
+	  quat = {problem_.traj[i][6],problem_.traj[i][3],problem_.traj[i][4],problem_.traj[i][5]};
+	  quat = quatmultiply(quat, quat_offset);
 
+	  ROS_INFO("position constraint: %f, %f, %f", problem_.traj[i][0], problem_.traj[i][1], problem_.traj[i][2]);
+	  ROS_INFO("quaternion constraint: %f, %f, %f, %f", quat[0], quat[1], quat[2], quat[3]);
+
+	  gtsam::Rot3 orient = gtsam::Rot3::Quaternion(quat[0], quat[1], quat[2], quat[3]);
 	    
+	  // gtsam::Rot3 orient = gtsam::Rot3::Quaternion(problem_.traj[i][6],problem_.traj[i][3],problem_.traj[i][4],problem_.traj[i][5]);
+	 //  if (problem_.robot.isOrientationOffset()){
+		// 	problem_.robot.offsetOrientation(orient);
+		// }
+	  // orient = orient * gtsam::Rot3::Quaternion(0, 0.7071, 0, 0.7071);
+
+	  graph.add(gpmp2::GaussianPriorWorkspaceOrientationArm(key_pos, problem_.robot.arm, DOF-1, orient, cartorient_model));
+
 	    // GP priors and cost factor
 	    if (i > 0) {
 	      gtsam::Key key_pos1 = gtsam::Symbol('x', i-1);
@@ -130,8 +144,6 @@ void ConstrainedManipulator::plan(gtsam::Vector start_conf, gtsam::Vector goal_c
 	      gtsam::Key key_vel2 = gtsam::Symbol('v', i);
 	      graph.add(gpmp2::GaussianProcessPriorLinear(key_pos1, key_vel1, key_pos2, key_vel2, problem_.delta_t, problem_.opt_setting.Qc_model));
 
-	      // Cost factor
-	      graph.add(gpmp2::ObstacleSDFFactorArm(key_pos, problem_.robot.arm, problem_.sdf, problem_.cost_sigma, problem_.epsilon));
 
 	      /*if (problem_.obs_check_inter > 0) {
 	        double total_check_step = (problem_.obs_check_inter + 1.0) * double(total_time_step);
@@ -148,9 +160,9 @@ void ConstrainedManipulator::plan(gtsam::Vector start_conf, gtsam::Vector goal_c
 	gtsam::LevenbergMarquardtParams parameters;
 	parameters.setVerbosity("ERROR");
 	parameters.setVerbosityLM("LAMBDA");
-	parameters.setlambdaInitial(1200.0);
-	parameters.setlambdaUpperBound(1.0e10);
-	parameters.setMaxIterations(900);
+	// parameters.setlambdaInitial(1200.0);
+	// parameters.setlambdaUpperBound(1.0e10);
+	parameters.setMaxIterations(500);
 	gtsam::LevenbergMarquardtOptimizer optimizer(graph, init_values_, parameters);
 	optimizer.optimize();
 	batch_values_ = optimizer.values();

@@ -2,7 +2,7 @@ piper:
   #sdf_file: sdf/lowerVectorTableDataset.bin
   sdf_file: sdf/empty_sdf.bin
   total_time: 10.0
-  total_step: 10
+  # total_step: 10
   obs_check_inter: 5
   control_inter: 5
   cost_sigma: 0.02
