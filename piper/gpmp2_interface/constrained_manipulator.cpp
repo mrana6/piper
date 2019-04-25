@@ -164,6 +164,17 @@ void ConstrainedManipulator::plan(gtsam::Vector start_conf, gtsam::Vector goal_c
 	// parameters.setlambdaUpperBound(1.0e10);
 	parameters.setMaxIterations(500);
 	gtsam::LevenbergMarquardtOptimizer optimizer(graph, init_values_, parameters);
+
+	// gtsam::DoglegParams parameters;
+	// parameters.setVerbosity("ERROR");
+	// // parameters.setlambdaInitial(1200.0);
+	// // parameters.setlambdaUpperBound(1.0e10);
+	// parameters.setMaxIterations(1000);
+	// gtsam::DoglegOptimizer optimizer(graph, init_values_, parameters);
+
+
+
+
 	optimizer.optimize();
 	batch_values_ = optimizer.values();
 
