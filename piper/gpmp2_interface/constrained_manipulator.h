@@ -48,13 +48,25 @@ public:
 private:
     Problem problem_;
     Traj traj_;
+
+    int DOF_;
+    gpmp2::ArmModel arm_model_;
+    gpmp2::Arm arm_;
+
+    gpmp2::BodySphereVector spheres_data_;
+    std::vector<double> js_, xs_, ys_, zs_, rs_;
+    std::vector<double>  a_, alpha_, d_, theta_;
+    gtsam::Pose3 arm_base_;
+    std::vector<double> orientation_, position_; // orientation in [x,y,z,w]
+    std::vector<double> eef_orientation_offset_; // TODO: Make order consistent [w,x,y,z] orientation error b/w FK using DH params and that using URDF 
+
+
     gtsam::Values init_values_, batch_values_, exec_values_;
 
     std::string arm_state_topic_, base_state_topic_, traj_file_;
     ros::Subscriber arm_state_sub_, base_state_sub_;
     gtsam::Vector arm_pos_;
-    gtsam::Pose2 base_pos_;
-    ros::Time arm_pos_time_, base_pos_time_;
+    ros::Time arm_pos_time_;
     double fix_cartpose_sigma_, fix_cartorient_sigma_;
     bool execute_traj_, write_traj_;
     

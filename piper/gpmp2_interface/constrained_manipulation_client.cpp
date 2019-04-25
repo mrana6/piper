@@ -17,12 +17,12 @@
 // #include <moveit_msgs/DisplayTrajectory.h>
 // #include <moveit_msgs/PlanningScene.h>
 
-#include <moveit/planning_scene_interface/planning_scene_interface.h>
+// #include <moveit/planning_scene_interface/planning_scene_interface.h>
 
-#include <moveit_msgs/DisplayRobotState.h>
-#include <moveit_msgs/DisplayTrajectory.h>
+// #include <moveit_msgs/DisplayRobotState.h>
+// #include <moveit_msgs/DisplayTrajectory.h>
 
-#include <moveit/move_group_interface/move_group.h>
+// #include <moveit/move_group_interface/move_group.h>
 
 #include <actionlib/client/simple_action_client.h>
 #include <piper/ConstrainedManipulationAction.h>
@@ -48,7 +48,7 @@ private:
 	tf2_ros::Buffer tf_buffer_;
     tf2_ros::TransformListener tf_listener_;
     ros::Subscriber arm_state_sub_;
-    moveit::planning_interface::MoveGroup group_;
+    // moveit::planning_interface::MoveGroup group_;
     // moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
     ros::Publisher display_publisher_;
     sensor_msgs::JointState joint_state_;
@@ -82,14 +82,15 @@ FetchConstrainedManipulator::FetchConstrainedManipulator(ros::NodeHandle nh) :
                         "forearm_roll_joint", "wrist_flex_joint", "wrist_roll_joint"};
 
 
-    current_conf_ = std::vector<double>(arm_joint_names_.size(),10);                 
+    current_conf_ = std::vector<double>(arm_joint_names_.size(),10);    
+	ROS_INFO("HI!!!");             
 
-   	arm_state_sub_ = nh.subscribe("joint_states", 1, &FetchConstrainedManipulator::armStateCallback, this);
+   	// arm_state_sub_ = nh.subscribe("joint_states", 1, &FetchConstrainedManipulator::armStateCallback, this);
    	ros::Duration(0.5).sleep();
 
    	//ros::topic::waitForMessage<sensor_msgs::JointState>("/joint_states", nh);
     
-   	ros::spinOnce();
+   	// ros::spinOnce();
 }
 
 /* *************************************************************************** */
@@ -271,7 +272,7 @@ int main(int argc, char** argv)
 	ros::NodeHandle nh;
 
 	FetchConstrainedManipulator fetch_constrained_manipulator(nh);
-	fetch_constrained_manipulator.sendGoal("/home/asif/fetch_ws/src/piper/data/eef/urdf/hat_reach.txt");
+	fetch_constrained_manipulator.sendGoal("/home/rail/Workspaces/constrained_manip/active/src/piper/data/eef/urdf/hat_reach.txt");
 
 	spinner.spin();
 

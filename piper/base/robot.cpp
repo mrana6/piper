@@ -73,6 +73,7 @@ Robot::Robot(ros::NodeHandle nh)
     marm = gpmp2::Pose2MobileArmModel(gpmp2::Pose2MobileArm(gpmp2::Arm(DOF_arm_, getVector(a_), getVector(alpha_), getVector(d_), 
       gtsam::Pose3(), getVector(theta_)), arm_base_), spheres_data_);
   }
+
 }
 
 /* ************************************************************************** */
