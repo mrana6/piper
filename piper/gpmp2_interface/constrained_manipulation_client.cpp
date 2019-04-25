@@ -3,19 +3,19 @@
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseArray.h>
 
-#include <hlpr_trac_ik/IKHandler.h>
+// #include <hlpr_trac_ik/IKHandler.h>
 
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <geometry_msgs/Vector3.h>
 
 // MoveIt!
-#include <moveit/robot_model_loader/robot_model_loader.h>
-#include <moveit/planning_interface/planning_interface.h>
-#include <moveit/planning_scene/planning_scene.h>
-#include <moveit/kinematic_constraints/utils.h>
-#include <moveit_msgs/DisplayTrajectory.h>
-#include <moveit_msgs/PlanningScene.h>
+// #include <moveit/robot_model_loader/robot_model_loader.h>
+// #include <moveit/planning_interface/planning_interface.h>
+// #include <moveit/planning_scene/planning_scene.h>
+// #include <moveit/kinematic_constraints/utils.h>
+// #include <moveit_msgs/DisplayTrajectory.h>
+// #include <moveit_msgs/PlanningScene.h>
 
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 
@@ -37,7 +37,7 @@
 
 class FetchConstrainedManipulator {
 private:
-	ros::ServiceClient trac_ik_client_;
+	// ros::ServiceClient trac_ik_client_;
 	actionlib::SimpleActionClient<piper::ConstrainedManipulationAction> manipulation_client_;
 	std::vector<std::string> arm_joint_names_;
 
@@ -71,12 +71,12 @@ public:
 
 FetchConstrainedManipulator::FetchConstrainedManipulator(ros::NodeHandle nh) : 
 	manipulation_client_("piper/execute_constrained_manipulation"),
-	tf_listener_(tf_buffer_),
-	group_("arm")
+	tf_listener_(tf_buffer_)
+	// group_("arm")
 {
-	group_.startStateMonitor();
-	trac_ik_client_ = nh.serviceClient<hlpr_trac_ik::IKHandler>("/hlpr_trac_ik");
-	display_publisher_ = nh.advertise<moveit_msgs::DisplayTrajectory>("/move_group/display_planned_path", 1, true);
+	// group_.startStateMonitor();
+	// trac_ik_client_ = nh.serviceClient<hlpr_trac_ik::IKHandler>("/hlpr_trac_ik");
+	// display_publisher_ = nh.advertise<moveit_msgs::DisplayTrajectory>("/move_group/display_planned_path", 1, true);
 
 	arm_joint_names_ = {"shoulder_pan_joint", "shoulder_lift_joint", "upperarm_roll_joint", "elbow_flex_joint",
                         "forearm_roll_joint", "wrist_flex_joint", "wrist_roll_joint"};
@@ -136,7 +136,7 @@ void FetchConstrainedManipulator::sendGoal(std::string waypoint_file)
 
 void FetchConstrainedManipulator::goToJointPose(std::vector<double> conf)
 {
-
+	/*
 	// std::vector<double> conf = {1.60517731706, -0.416938478551, 2.71645797496, 0.791172502393, 0.269659725458, 2.0819469834, 1.3784506785};
 
 	size_t index;
@@ -162,6 +162,7 @@ void FetchConstrainedManipulator::goToJointPose(std::vector<double> conf)
   	{
     ROS_INFO("Failed with MoveIt error code: %d", errorCode.val);
   	}
+	  */
 }
 
 
@@ -212,7 +213,7 @@ void FetchConstrainedManipulator::armStateCallback(const sensor_msgs::JointState
 
 std::vector<double> FetchConstrainedManipulator::getIK(geometry_msgs::Pose goal_pose)
 {	
-	ROS_INFO("Finding Conf using TRAC_IK");
+	/*ROS_INFO("Finding Conf using TRAC_IK");
 
 	// transforming pose to torso to avoid the torso link in IK
 	// IMP: Set the trac_ik base_chain to torso_lift_link
@@ -257,7 +258,7 @@ std::vector<double> FetchConstrainedManipulator::getIK(geometry_msgs::Pose goal_
 	  }
 
 	return conf;
-
+   */
 }
 
 /* *********************************************************************** */

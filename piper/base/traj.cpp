@@ -31,11 +31,11 @@ Traj::Traj(ros::NodeHandle nh)
     plan_traj_pub = nh.advertise<trajectory_msgs::JointTrajectory>(plan_traj_pub_topic_, 1);
   }
 
-  if (nh.hasParam("robot/moveit_plan_traj_pub_topic"))
-  {
-    nh.getParam("robot/moveit_plan_traj_pub_topic", moveit_plan_traj_pub_topic_);
-    moveit_plan_traj_pub = nh.advertise<moveit_msgs::DisplayTrajectory>(moveit_plan_traj_pub_topic_, 1);
-  }
+  // if (nh.hasParam("robot/moveit_plan_traj_pub_topic"))
+  // {
+  //   nh.getParam("robot/moveit_plan_traj_pub_topic", moveit_plan_traj_pub_topic_);
+  //   moveit_plan_traj_pub = nh.advertise<moveit_msgs::DisplayTrajectory>(moveit_plan_traj_pub_topic_, 1);
+  // }
 
   // trajectory action client
   using_traj_client = false;
@@ -183,9 +183,9 @@ void Traj::executeTrajectory(gtsam::Values& exec_values, Problem& problem, size_
   traj_.trajectory.header.stamp = ros::Time::now();
     
   // dispatch ros trajectory
-  moveit_msgs::RobotTrajectory rt;
-  rt.joint_trajectory = traj_.trajectory;
-  display_traj_.trajectory.push_back(rt);
+  // moveit_msgs::RobotTrajectory rt;
+  // rt.joint_trajectory = traj_.trajectory;
+  // display_traj_.trajectory.push_back(rt);
   //moveit::planning_interface::MoveGroup group("arm");
   //moveit::core::RobotState rs(*group.getCurrentState());
   //robotStateToRobotStateMsg(rs, display_traj_.trajectory_start);

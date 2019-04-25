@@ -76,7 +76,7 @@ void ConstrainedManipulator::plan(gtsam::Vector start_conf, gtsam::Vector goal_c
 		problem_.robot.negateTheta(problem_.goal_conf);
 
 	problem_.copyMsgToTrajectory(waypoints);
-	init_values_.clear();
+	init_values_.clear(); // TODO: CHECK IF GTSAM IS CLEARED
 
 	// initialize trajectory
 	traj_.initializeTrajectory(init_values_, problem_);
@@ -114,10 +114,11 @@ void ConstrainedManipulator::plan(gtsam::Vector start_conf, gtsam::Vector goal_c
 	    }
 
     	      // Cost factor
-      graph.add(gpmp2::ObstacleSDFFactorArm(key_pos, problem_.robot.arm, problem_.sdf, problem_.cost_sigma, problem_.epsilon));
+      // graph.add(gpmp2::ObstacleSDFFactorArm(key_pos, problem_.robot.arm, problem_.sdf, problem_.cost_sigma, problem_.epsilon));
 
       //workspace factor
-      gtsam::Point3 pose(problem_.traj[i][0],problem_.traj[i][1],problem_.traj[i][2]);
+			// TODO: check arm model with matlab
+    gtsam::Point3 pose(problem_.traj[i][0],problem_.traj[i][1],problem_.traj[i][2]);
 	  graph.add(gpmp2::GaussianPriorWorkspacePositionArm(key_pos, problem_.robot.arm, DOF-1, pose, cartpose_model));
 
 	  quat = {problem_.traj[i][6],problem_.traj[i][3],problem_.traj[i][4],problem_.traj[i][5]};
@@ -142,6 +143,8 @@ void ConstrainedManipulator::plan(gtsam::Vector start_conf, gtsam::Vector goal_c
 	      gtsam::Key key_pos2 = gtsam::Symbol('x', i);
 	      gtsam::Key key_vel1 = gtsam::Symbol('v', i-1);
 	      gtsam::Key key_vel2 = gtsam::Symbol('v', i);
+
+				// TODO: May conflict if waypoints too far apart
 	      graph.add(gpmp2::GaussianProcessPriorLinear(key_pos1, key_vel1, key_pos2, key_vel2, problem_.delta_t, problem_.opt_setting.Qc_model));
 
 
@@ -160,7 +163,7 @@ void ConstrainedManipulator::plan(gtsam::Vector start_conf, gtsam::Vector goal_c
 	gtsam::LevenbergMarquardtParams parameters;
 	parameters.setVerbosity("ERROR");
 	parameters.setVerbosityLM("LAMBDA");
-	// parameters.setlambdaInitial(1200.0);
+	parameters.setlambdaInitial(1200.0);
 	// parameters.setlambdaUpperBound(1.0e10);
 	parameters.setMaxIterations(500);
 	gtsam::LevenbergMarquardtOptimizer optimizer(graph, init_values_, parameters);
