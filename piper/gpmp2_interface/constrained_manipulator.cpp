@@ -16,15 +16,15 @@ ConstrainedManipulator::ConstrainedManipulator(ros::NodeHandle nh) :
 	nh.getParam("robot/arm_base/orientation", orientation_); // quaternion: [x, y, z, w]
 	nh.getParam("robot/arm_base/position", position_); // [x, y, z]
 	nh.getParam("robot/DH/a", a_);
-  nh.getParam("robot/DH/alpha", alpha_);
-  nh.getParam("robot/DH/d", d_);
-  nh.getParam("robot/DH/theta", theta_);
+    nh.getParam("robot/DH/alpha", alpha_);
+    nh.getParam("robot/DH/d", d_);
+    nh.getParam("robot/DH/theta", theta_);
 
 	nh.getParam("robot/spheres/js", js_);
-  nh.getParam("robot/spheres/xs", xs_);
-  nh.getParam("robot/spheres/ys", ys_);
-  nh.getParam("robot/spheres/zs", zs_);
-  nh.getParam("robot/spheres/rs", rs_);
+    nh.getParam("robot/spheres/xs", xs_);
+    nh.getParam("robot/spheres/ys", ys_);
+    nh.getParam("robot/spheres/zs", zs_);
+    nh.getParam("robot/spheres/rs", rs_);
 
 	  // arm's base pose (relative to robot base if mobile_base_ is true)
   arm_base_ = gtsam::Pose3(gtsam::Rot3::Quaternion(orientation_[3], orientation_[0], orientation_[1], 
@@ -37,18 +37,32 @@ ConstrainedManipulator::ConstrainedManipulator(ros::NodeHandle nh) :
 	arm_ = gpmp2::Arm(DOF_, getVector(a_), getVector(alpha_), getVector(d_), arm_base_, getVector(theta_));
 	arm_model_ = gpmp2::ArmModel(arm_, spheres_data_);
 
+	// std::cout<<"a: "<<std::endl;
+	// std::cout<<arm_model_.fk_model().a()<<std::endl;
+
+	// std::cout<<"alpha: "<<std::endl;
+	// std::cout<<arm_model_.fk_model().alpha()<<std::endl;
+
+	// std::cout<<"d: "<<std::endl;
+	// std::cout<<arm_model_.fk_model().d()<<std::endl;
+
+	// std::cout<<"base_pose: "<<std::endl;
+	// std::cout<<arm_model_.fk_model().base_pose()<<std::endl;
+
+
+
 	std::cout<<"FK for zero conf: " << std::endl;
-	std::cout<<arm_model_.fk_model().forwardKinematicsPosition(gtsam::Vector::Zero(DOF_))<<std::endl;
+	std::cout<<arm_model_.fk_model().forwardKinematicsPose(gtsam::Vector::Zero(DOF_))<<std::endl;
 
 	  // robot state subscriber (used to initialize start state if not passed as param)
-	if (nh.hasParam("robot/arm_state_topic"))
-	  {
-	    nh.getParam("robot/arm_state_topic", arm_state_topic_);
-	    arm_state_sub_ = nh.subscribe(arm_state_topic_, 1, &ConstrainedManipulator::armStateCallback, this);
-	    arm_pos_ = gtsam::Vector::Zero(problem_.robot.getDOFarm());
-	    arm_pos_time_ = ros::Time::now();
-	  }
-	  ros::Duration(1.0).sleep();
+	// if (nh.hasParam("robot/arm_state_topic"))
+	//   {
+	//     nh.getParam("robot/arm_state_topic", arm_state_topic_);
+	//     arm_state_sub_ = nh.subscribe(arm_state_topic_, 1, &ConstrainedManipulator::armStateCallback, this);
+	//     arm_pos_ = gtsam::Vector::Zero(problem_.robot.getDOFarm());
+	//     arm_pos_time_ = ros::Time::now();
+	//   }
+	  // ros::Duration(1.0).sleep();
 	
 	// constrained_manipulation_server_.start();
 }
@@ -112,6 +126,7 @@ void ConstrainedManipulator::plan(gtsam::Vector start_conf, gtsam::Vector goal_c
 	ROS_INFO("Total time step is %i", static_cast<int>(problem_.opt_setting.total_step));
 	ROS_INFO("Delta t is %f", problem_.delta_t);
 	ROS_INFO("Arm DOF: %i", DOF_);
+	int DOF = DOF_;
 
 	gtsam::noiseModel::Gaussian::shared_ptr cartpose_model = gtsam::noiseModel::Isotropic::Sigma(3, fix_cartpose_sigma_);
 	gtsam::noiseModel::Gaussian::shared_ptr cartorient_model = gtsam::noiseModel::Isotropic::Sigma(3, fix_cartorient_sigma_);
@@ -128,115 +143,106 @@ void ConstrainedManipulator::plan(gtsam::Vector start_conf, gtsam::Vector goal_c
 																problem_.goal_conf[3], problem_.goal_conf[4],problem_.goal_conf[5], problem_.goal_conf[6]);
 
 
-
-	// std::cout<<"a: "<<std::endl;
-	// std::cout<<problem_.robot.arm.fk_model().a()<<std::endl;
-
-	// std::cout<<"alpha: "<<std::endl;
-	// std::cout<<problem_.robot.arm.fk_model().alpha()<<std::endl;
-
-	// std::cout<<"d: "<<std::endl;
-	// std::cout<<problem_.robot.arm.fk_model().d()<<std::endl;
-
-	// std::cout<<"base_pose: "<<std::endl;
-	// std::cout<<problem_.robot.arm.fk_model().base_pose()<<std::endl;
-
-		// gtsam::NonlinearFactorGraph graph;
+	std::cout<<problem_.robot.arm.fk_model().forwardKinematicsPose(problem_.start_conf)<<std::endl;
 
 
-	// init_values_.clear(); // TODO: CHECK IF GTSAM IS CLEARED
 
-	// // initialize trajectory
-	// traj_.initializeTrajectory(init_values_, problem_);
-	// // init_values_ = gpmp2::initArmTrajStraightLine(problem_.start_conf, problem_.goal_conf, problem_.opt_setting.total_step);
+	gtsam::NonlinearFactorGraph graph;
 
 
-	// for (size_t i = 0; i <= problem_.opt_setting.total_step; i++) {
-	//     gtsam::Key key_pos = gtsam::Symbol('x', i);
-	//     gtsam::Key key_vel = gtsam::Symbol('v', i);
+	init_values_.clear(); // TODO: CHECK IF GTSAM IS CLEARED
+
+	// initialize trajectory
+	traj_.initializeTrajectory(init_values_, problem_);
+	// init_values_ = gpmp2::initArmTrajStraightLine(problem_.start_conf, problem_.goal_conf, problem_.opt_setting.total_step);
+
+
+	for (size_t i = 0; i <= problem_.opt_setting.total_step; i++) {
+	    gtsam::Key key_pos = gtsam::Symbol('x', i);
+	    gtsam::Key key_vel = gtsam::Symbol('v', i);
 	    
-	//     // Adding init conf constraint is conflicting. I dont know why!!!
-	//     if (i == 0){
-	//     	graph.add(gtsam::PriorFactor<gtsam::Vector>(key_pos, problem_.start_conf, problem_.opt_setting.conf_prior_model));
-	//     	graph.add(gtsam::PriorFactor<gtsam::Vector>(key_vel, gtsam::Vector::Zero(DOF), problem_.opt_setting.vel_prior_model));
-	//   	}
-	// 	else if (i == problem_.opt_setting.total_step){
-	// 			// graph.add(gtsam::PriorFactor<gtsam::Vector>(key_pos, problem_.goal_conf, problem_.opt_setting.conf_prior_model));
-	//       graph.add(gtsam::PriorFactor<gtsam::Vector>(key_vel, gtsam::Vector::Zero(DOF), problem_.opt_setting.vel_prior_model)); 
-	//     }
+	    // Adding init conf constraint is conflicting. I dont know why!!!
+	    if (i == 0){
+	    	graph.add(gtsam::PriorFactor<gtsam::Vector>(key_pos, problem_.start_conf, problem_.opt_setting.conf_prior_model));
+	    	graph.add(gtsam::PriorFactor<gtsam::Vector>(key_vel, gtsam::Vector::Zero(DOF), problem_.opt_setting.vel_prior_model));
+	  	}
+		else if (i == problem_.opt_setting.total_step){
+				// graph.add(gtsam::PriorFactor<gtsam::Vector>(key_pos, problem_.goal_conf, problem_.opt_setting.conf_prior_model));
+	      graph.add(gtsam::PriorFactor<gtsam::Vector>(key_vel, gtsam::Vector::Zero(DOF), problem_.opt_setting.vel_prior_model)); 
+	    }
 
-  //   	      // Cost factor
-  //     // graph.add(gpmp2::ObstacleSDFFactorArm(key_pos, problem_.robot.arm, problem_.sdf, problem_.cost_sigma, problem_.epsilon));
+    	      // Cost factor
+      // graph.add(gpmp2::ObstacleSDFFactorArm(key_pos, problem_.robot.arm, problem_.sdf, problem_.cost_sigma, problem_.epsilon));
 
-  //     //workspace factor
-	// 		// TODO: check arm model with matlab
-  //   gtsam::Point3 pose(problem_.traj[i][0],problem_.traj[i][1],problem_.traj[i][2]);
-	//   graph.add(gpmp2::GaussianPriorWorkspacePositionArm(key_pos, problem_.robot.arm, DOF-1, pose, cartpose_model));
+      //workspace factor
+			// TODO: check arm model with matlab
+      gtsam::Point3 pose(problem_.traj[i][0],problem_.traj[i][1],problem_.traj[i][2]);
+	  graph.add(gpmp2::GaussianPriorWorkspacePositionArm(key_pos, problem_.robot.arm, DOF-1, pose, cartpose_model));
 
-	//   quat = {problem_.traj[i][6],problem_.traj[i][3],problem_.traj[i][4],problem_.traj[i][5]};
-	//   quat = quatmultiply(quat, quat_offset);
-	//   gtsam::Rot3 orient = gtsam::Rot3::Quaternion(quat[0], quat[1], quat[2], quat[3]);
-	//   graph.add(gpmp2::GaussianPriorWorkspaceOrientationArm(key_pos, problem_.robot.arm, DOF-1, orient, cartorient_model));
+	  quat = {problem_.traj[i][6],problem_.traj[i][3],problem_.traj[i][4],problem_.traj[i][5]};
+	  quat = quatmultiply(quat, quat_offset);
+	  gtsam::Rot3 orient = gtsam::Rot3::Quaternion(quat[0], quat[1], quat[2], quat[3]);
+	  graph.add(gpmp2::GaussianPriorWorkspaceOrientationArm(key_pos, problem_.robot.arm, DOF-1, orient, cartorient_model));
 
-	//   // ROS_INFO("position constraint: %f, %f, %f", problem_.traj[i][0], problem_.traj[i][1], problem_.traj[i][2]);
-	//   // ROS_INFO("quaternion constraint: %f, %f, %f, %f", quat[0], quat[1], quat[2], quat[3]);
+	  // ROS_INFO("position constraint: %f, %f, %f", problem_.traj[i][0], problem_.traj[i][1], problem_.traj[i][2]);
+	  // ROS_INFO("quaternion constraint: %f, %f, %f, %f", quat[0], quat[1], quat[2], quat[3]);
 	    
-	//   // gtsam::Rot3 orient = gtsam::Rot3::Quaternion(problem_.traj[i][6],problem_.traj[i][3],problem_.traj[i][4],problem_.traj[i][5]);
-	//  //  if (problem_.robot.isOrientationOffset()){
-	// 	// 	problem_.robot.offsetOrientation(orient);
-	// 	// }
-	//   // orient = orient * gtsam::Rot3::Quaternion(0, 0.7071, 0, 0.7071);
+	  // gtsam::Rot3 orient = gtsam::Rot3::Quaternion(problem_.traj[i][6],problem_.traj[i][3],problem_.traj[i][4],problem_.traj[i][5]);
+	 //  if (problem_.robot.isOrientationOffset()){
+		// 	problem_.robot.offsetOrientation(orient);
+		// }
+	  // orient = orient * gtsam::Rot3::Quaternion(0, 0.7071, 0, 0.7071);
 
 
-	//     // GP priors and cost factor
-	//     if (i > 0) {
-	//       gtsam::Key key_pos1 = gtsam::Symbol('x', i-1);
-	//       gtsam::Key key_pos2 = gtsam::Symbol('x', i);
-	//       gtsam::Key key_vel1 = gtsam::Symbol('v', i-1);
-	//       gtsam::Key key_vel2 = gtsam::Symbol('v', i);
+	    // GP priors and cost factor
+	    if (i > 0) {
+	      gtsam::Key key_pos1 = gtsam::Symbol('x', i-1);
+	      gtsam::Key key_pos2 = gtsam::Symbol('x', i);
+	      gtsam::Key key_vel1 = gtsam::Symbol('v', i-1);
+	      gtsam::Key key_vel2 = gtsam::Symbol('v', i);
 
-	// 			// TODO: May conflict if waypoints too far apart
-	//       graph.add(gpmp2::GaussianProcessPriorLinear(key_pos1, key_vel1, key_pos2, key_vel2, problem_.delta_t, problem_.opt_setting.Qc_model));
-
-
-	//       /*if (problem_.obs_check_inter > 0) {
-	//         double total_check_step = (problem_.obs_check_inter + 1.0) * double(total_time_step);
-	//         for (int j = 0; j < problem_.obs_check_inter; j++) {
-	//           double tau = j * (problem_.total_time / total_check_step);
-	//           graph.add(gpmp2::ObstacleSDFFactorGPArm(key_pos1, key_vel1, key_pos2, key_vel2, problem_.robot.arm, problem_.sdf, problem_.cost_sigma, problem_.epsilon, problem_.opt_setting.Qc_model, problem_.delta_t, tau));
-	//         }
-	//       }*/
-	//     }
-	//   }
+				// TODO: May conflict if waypoints too far apart
+	      graph.add(gpmp2::GaussianProcessPriorLinear(key_pos1, key_vel1, key_pos2, key_vel2, problem_.delta_t, problem_.opt_setting.Qc_model));
 
 
-	// ROS_INFO("Optimizing...");
-	// gtsam::LevenbergMarquardtParams parameters;
+	      /*if (problem_.obs_check_inter > 0) {
+	        double total_check_step = (problem_.obs_check_inter + 1.0) * double(total_time_step);
+	        for (int j = 0; j < problem_.obs_check_inter; j++) {
+	          double tau = j * (problem_.total_time / total_check_step);
+	          graph.add(gpmp2::ObstacleSDFFactorGPArm(key_pos1, key_vel1, key_pos2, key_vel2, problem_.robot.arm, problem_.sdf, problem_.cost_sigma, problem_.epsilon, problem_.opt_setting.Qc_model, problem_.delta_t, tau));
+	        }
+	      }*/
+	    }
+	  }
+
+
+	ROS_INFO("Optimizing...");
+	gtsam::LevenbergMarquardtParams parameters;
+	parameters.setVerbosity("ERROR");
+	parameters.setVerbosityLM("LAMBDA");
+	parameters.setlambdaInitial(1200.0);
+	// parameters.setlambdaUpperBound(1.0e10);
+	parameters.setMaxIterations(500);
+	gtsam::LevenbergMarquardtOptimizer optimizer(graph, init_values_, parameters);
+
+	// gtsam::DoglegParams parameters;
 	// parameters.setVerbosity("ERROR");
-	// parameters.setVerbosityLM("LAMBDA");
-	// parameters.setlambdaInitial(1200.0);
+	// // parameters.setlambdaInitial(1200.0);
 	// // parameters.setlambdaUpperBound(1.0e10);
-	// parameters.setMaxIterations(500);
-	// gtsam::LevenbergMarquardtOptimizer optimizer(graph, init_values_, parameters);
-
-	// // gtsam::DoglegParams parameters;
-	// // parameters.setVerbosity("ERROR");
-	// // // parameters.setlambdaInitial(1200.0);
-	// // // parameters.setlambdaUpperBound(1.0e10);
-	// // parameters.setMaxIterations(1000);
-	// // gtsam::DoglegOptimizer optimizer(graph, init_values_, parameters);
+	// parameters.setMaxIterations(1000);
+	// gtsam::DoglegOptimizer optimizer(graph, init_values_, parameters);
 
 
 
 
-	// optimizer.optimize();
-	// batch_values_ = optimizer.values();
+	optimizer.optimize();
+	batch_values_ = optimizer.values();
 
-	// ROS_INFO("Batch GPMP2 optimization complete.");
+	ROS_INFO("Batch GPMP2 optimization complete.");
 
-	//   // publish trajectory for visualization or other use
-  // 	if (traj_.plan_traj_pub)
-  //   	traj_.publishPlannedTrajectory(batch_values_, problem_, 0);
+	  // publish trajectory for visualization or other use
+  	if (traj_.plan_traj_pub)
+    	traj_.publishPlannedTrajectory(batch_values_, problem_, 0);
 }
 
 
