@@ -55,16 +55,16 @@ ConstrainedManipulator::ConstrainedManipulator(ros::NodeHandle nh) :
 	std::cout<<arm_model_.fk_model().forwardKinematicsPose(gtsam::Vector::Zero(DOF_))<<std::endl;
 
 	  // robot state subscriber (used to initialize start state if not passed as param)
-	// if (nh.hasParam("robot/arm_state_topic"))
-	//   {
-	//     nh.getParam("robot/arm_state_topic", arm_state_topic_);
-	//     arm_state_sub_ = nh.subscribe(arm_state_topic_, 1, &ConstrainedManipulator::armStateCallback, this);
-	//     arm_pos_ = gtsam::Vector::Zero(problem_.robot.getDOFarm());
-	//     arm_pos_time_ = ros::Time::now();
-	//   }
-	  // ros::Duration(1.0).sleep();
+	if (nh.hasParam("robot/arm_state_topic"))
+	  {
+	    nh.getParam("robot/arm_state_topic", arm_state_topic_);
+	    arm_state_sub_ = nh.subscribe(arm_state_topic_, 1, &ConstrainedManipulator::armStateCallback, this);
+	    arm_pos_ = gtsam::Vector::Zero(problem_.robot.getDOFarm());
+	    arm_pos_time_ = ros::Time::now();
+	  }
+	  ros::Duration(1.0).sleep();
 	
-	// constrained_manipulation_server_.start();
+	constrained_manipulation_server_.start();
 }
 
 /* ********************************************************************* */
@@ -126,7 +126,7 @@ void ConstrainedManipulator::plan(gtsam::Vector start_conf, gtsam::Vector goal_c
 	ROS_INFO("Total time step is %i", static_cast<int>(problem_.opt_setting.total_step));
 	ROS_INFO("Delta t is %f", problem_.delta_t);
 	ROS_INFO("Arm DOF: %i", DOF_);
-	int DOF = DOF_;
+	int DOF = problem_.robot.getDOF();
 
 	gtsam::noiseModel::Gaussian::shared_ptr cartpose_model = gtsam::noiseModel::Isotropic::Sigma(3, fix_cartpose_sigma_);
 	gtsam::noiseModel::Gaussian::shared_ptr cartorient_model = gtsam::noiseModel::Isotropic::Sigma(3, fix_cartorient_sigma_);
@@ -143,7 +143,7 @@ void ConstrainedManipulator::plan(gtsam::Vector start_conf, gtsam::Vector goal_c
 																problem_.goal_conf[3], problem_.goal_conf[4],problem_.goal_conf[5], problem_.goal_conf[6]);
 
 
-	std::cout<<problem_.robot.arm.fk_model().forwardKinematicsPose(problem_.start_conf)<<std::endl;
+	// std::cout<<problem_.robot.arm.fk_model().forwardKinematicsPose(problem_.start_conf)<<std::endl;
 
 
 
@@ -153,8 +153,8 @@ void ConstrainedManipulator::plan(gtsam::Vector start_conf, gtsam::Vector goal_c
 	init_values_.clear(); // TODO: CHECK IF GTSAM IS CLEARED
 
 	// initialize trajectory
-	traj_.initializeTrajectory(init_values_, problem_);
-	// init_values_ = gpmp2::initArmTrajStraightLine(problem_.start_conf, problem_.goal_conf, problem_.opt_setting.total_step);
+	// traj_.initializeTrajectory(init_values_, problem_);
+	init_values_ = gpmp2::initArmTrajStraightLine(problem_.start_conf, problem_.goal_conf, problem_.opt_setting.total_step);
 
 
 	for (size_t i = 0; i <= problem_.opt_setting.total_step; i++) {
@@ -183,6 +183,17 @@ void ConstrainedManipulator::plan(gtsam::Vector start_conf, gtsam::Vector goal_c
 	  quat = quatmultiply(quat, quat_offset);
 	  gtsam::Rot3 orient = gtsam::Rot3::Quaternion(quat[0], quat[1], quat[2], quat[3]);
 	  graph.add(gpmp2::GaussianPriorWorkspaceOrientationArm(key_pos, problem_.robot.arm, DOF-1, orient, cartorient_model));
+
+	  // if (i == 0 || i==problem_.opt_setting.total_step || i == 50){
+	  // 	gpmp2::GaussianPriorWorkspaceOrientationArm factor = 
+	  // 		gpmp2::GaussianPriorWorkspaceOrientationArm(key_pos, problem_.robot.arm, DOF-1, orient, cartorient_model);
+	  // 	// std::cout<<orient<<std::endl;
+	  // 	factor.print();
+	  // 	// std::copy(begin(factor), end(factor), std::ostream_iterator<char>(std::cout, " "));
+
+	  // }
+
+
 
 	  // ROS_INFO("position constraint: %f, %f, %f", problem_.traj[i][0], problem_.traj[i][1], problem_.traj[i][2]);
 	  // ROS_INFO("quaternion constraint: %f, %f, %f, %f", quat[0], quat[1], quat[2], quat[3]);
@@ -225,6 +236,8 @@ void ConstrainedManipulator::plan(gtsam::Vector start_conf, gtsam::Vector goal_c
 	parameters.setMaxIterations(500);
 	gtsam::LevenbergMarquardtOptimizer optimizer(graph, init_values_, parameters);
 
+
+
 	// gtsam::DoglegParams parameters;
 	// parameters.setVerbosity("ERROR");
 	// // parameters.setlambdaInitial(1200.0);
@@ -232,7 +245,9 @@ void ConstrainedManipulator::plan(gtsam::Vector start_conf, gtsam::Vector goal_c
 	// parameters.setMaxIterations(1000);
 	// gtsam::DoglegOptimizer optimizer(graph, init_values_, parameters);
 
-
+	// graph.print();
+	// init_values_.print();
+	// parameters.print();
 
 
 	optimizer.optimize();

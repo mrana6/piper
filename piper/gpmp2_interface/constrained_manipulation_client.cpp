@@ -82,8 +82,7 @@ FetchConstrainedManipulator::FetchConstrainedManipulator(ros::NodeHandle nh) :
                         "forearm_roll_joint", "wrist_flex_joint", "wrist_roll_joint"};
 
 
-    current_conf_ = std::vector<double>(arm_joint_names_.size(),10);    
-	ROS_INFO("HI!!!");             
+    current_conf_ = std::vector<double>(arm_joint_names_.size(),10);             
 
    	// arm_state_sub_ = nh.subscribe("joint_states", 1, &FetchConstrainedManipulator::armStateCallback, this);
    	ros::Duration(0.5).sleep();
