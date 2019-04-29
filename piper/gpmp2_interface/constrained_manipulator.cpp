@@ -7,6 +7,90 @@ ConstrainedManipulator::ConstrainedManipulator(ros::NodeHandle nh) :
    problem_(nh),
    traj_(nh)
 {
+
+
+
+    int dof = 7;
+
+    // lines 24, 25
+    std::vector<double> start_conf = {1.60517731706, -0.416938478551, 2.71645797496, 0.791172502393, 0.269659725458, 2.0819469834, 1.3784506785};
+    std::vector<double> end_conf = {1.57373038331, -0.377438480459, 2.69728339915, 1.3069734553, 0.250101087124, 1.63517488486, 1.23272209039};
+
+    // line 33
+    int Qc = 1;
+
+    // lines 35-39
+    double fix_pose_sigma = 0.0001;theta_bias
+    double fix_vel_sigma = 0.0001;
+    double fix_cartpos_sigma = 0.0001;
+    double fix_cartorient_sigma = 0.0001;
+
+    // lines 46-48
+    double cost_sigma = 0.02;
+    double epsilon_dist = 0.01;
+
+    // generateFetchArm.m
+    // lines 15 - 37
+    gpmp2::BodySphereVector spheres_data_;
+    std::vector<double> js_, xs_, ys_, zs_, rs_;
+
+    js_ = {0,1,2,3,4,5,6};
+    xs_ = {0,0,0,0,0,0,0};
+    ys_ = {0,0,0,0,0,0,0};
+    zs_ = {0,0,0,0,0,0,0};
+    rs_ = {0.01,0.01,0.01,0.01,0.01,0.01,0.01};
+
+    for (size_t i = 0; i < js_.size(); i++) {
+        spheres_data_.push_back(gpmp2::BodySphere(js_[i], rs_[i], gtsam::Point3(xs_[i], ys_[i], zs_[i])));
+    }
+
+
+
+    // lines 6
+    std::vector<double> orientation_ = {0, 0, 0, 1};
+    std::vector<double> position_ = {0.03265, 0, 0.72601};
+
+    gtsam::Pose3 arm_base_ = gtsam::Pose3(gtsam::Rot3::Quaternion(orientation_[3], orientation_[0], orientation_[1], orientation_[2]), gtsam::Point3(getVector(position_)));
+
+
+    // lines 8 - 11
+    std::vector<double> a_ = {0.117, 0, 0, 0, 0, 0, 0};
+    std::vector<double> alpha_ = {-1.5708, -1.5708, 1.5708, -1.5708, 1.5708, -1.5708, 0};
+    std::vector<double> d_ = {0.06, 0, 0.352, 0, 0.3215, 0, 0.30495};
+    std::vector<double> theta_ = {0, -1.5708, 0, 0, 0, 0, 0};
+
+    std::vector<double> arm_origin = {0.03265, 0, 0.72601};
+
+    // line 12
+    gpmp2::Arm arm_ = gpmp2::Arm(dof, getVector(a_), getVector(alpha_), getVector(d_), arm_base_, getVector(theta_));
+
+    // line 38
+    gpmp2::ArmModel arm_model_ = gpmp2::ArmModel(arm_, spheres_data_);
+    // end generateFetchArm.m
+
+
+    std::cout<<"a: "<<std::endl;
+    std::cout<<arm_model_.fk_model().a()<<std::endl;
+
+    std::cout<<"alpha: "<<std::endl;
+    std::cout<<arm_model_.fk_model().alpha()<<std::endl;
+
+    std::cout<<"d: "<<std::endl;
+    std::cout<<arm_model_.fk_model().d()<<std::endl;
+
+    std::cout<<"base_pose: "<<std::endl;
+    std::cout<<arm_model_.fk_model().base_pose()<<std::endl;
+
+    std::cout<<"theta: "<<std::endl;
+    std::cout<<arm_model_.fk_model().theta()<<std::endl;
+
+
+    // fk in line 74
+    std::cout<<"FK for zero conf: " << std::endl;
+    std::cout<<arm_model_.fk_model().forwardKinematicsPose(gtsam::Vector::Zero(dof))<<std::endl;
+
+
+
 	nh.getParam("fix_cartpose_sigma", fix_cartpose_sigma_);
 	nh.getParam("fix_cartorient_sigma", fix_cartorient_sigma_);
 

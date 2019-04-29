@@ -270,8 +270,11 @@ int main(int argc, char** argv)
 
 	ros::NodeHandle nh;
 
+	// TODO fix path
+	// TODO pass base pose
+	// TODO fix getIK func
 	FetchConstrainedManipulator fetch_constrained_manipulator(nh);
-	fetch_constrained_manipulator.sendGoal("/home/asif/fetch_ws/src/piper/data/eef/urdf/hat_reach.txt");
+	fetch_constrained_manipulator.sendGoal("/home/abhinav/derail_ws/active/src/piper/data/eef/urdf/hat_reach.txt");
 
 	spinner.spin();
 
