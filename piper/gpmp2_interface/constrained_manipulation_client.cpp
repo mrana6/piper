@@ -11,19 +11,19 @@
 #include <geometry_msgs/Vector3.h>
 
 // MoveIt!
-// #include <moveit/robot_model_loader/robot_model_loader.h>
-// #include <moveit/planning_interface/planning_interface.h>
-// #include <moveit/planning_scene/planning_scene.h>
-// #include <moveit/kinematic_constraints/utils.h>
-// #include <moveit_msgs/DisplayTrajectory.h>
-// #include <moveit_msgs/PlanningScene.h>
+#include <moveit/robot_model_loader/robot_model_loader.h>
+#include <moveit/planning_interface/planning_interface.h>
+#include <moveit/planning_scene/planning_scene.h>
+#include <moveit/kinematic_constraints/utils.h>
+#include <moveit_msgs/DisplayTrajectory.h>
+#include <moveit_msgs/PlanningScene.h>
 
-// #include <moveit/planning_scene_interface/planning_scene_interface.h>
+#include <moveit/planning_scene_interface/planning_scene_interface.h>
 
-// #include <moveit_msgs/DisplayRobotState.h>
-// #include <moveit_msgs/DisplayTrajectory.h>
+#include <moveit_msgs/DisplayRobotState.h>
+#include <moveit_msgs/DisplayTrajectory.h>
 
-// #include <moveit/move_group_interface/move_group.h>
+#include <moveit/move_group_interface/move_group_interface.h>
 
 #include <actionlib/client/simple_action_client.h>
 #include <piper/ConstrainedManipulationAction.h>
@@ -49,8 +49,8 @@ private:
 	tf2_ros::Buffer tf_buffer_;
 	tf2_ros::TransformListener tf_listener_;
 	ros::Subscriber arm_state_sub_;
-	// moveit::planning_interface::MoveGroup group_;
-	// moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
+	moveit::planning_interface::MoveGroupInterface group_;
+	moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
 	ros::Publisher display_publisher_;
 	sensor_msgs::JointState joint_state_;
 
@@ -72,10 +72,10 @@ public:
 
 FetchConstrainedManipulator::FetchConstrainedManipulator(ros::NodeHandle nh) : 
 	manipulation_client_("piper/execute_constrained_manipulation"),
-	tf_listener_(tf_buffer_)
-	// group_("arm")
+	tf_listener_(tf_buffer_),
+	group_("arm")
 {
-	// group_.startStateMonitor();
+	group_.startStateMonitor();
 	trac_ik_client_ = nh.serviceClient<hlpr_trac_ik::IKHandler>("/hlpr_trac_ik");
 	// display_publisher_ = nh.advertise<moveit_msgs::DisplayTrajectory>("/move_group/display_planned_path", 1, true);
 
@@ -105,6 +105,21 @@ void FetchConstrainedManipulator::sendGoal(std::string waypoint_file)
 	start_conf_ = getIK(start_pose);
 
 
+	// geometry_msgs::Pose test_pose;
+	// test_pose.position.x = 0.0504;
+	// test_pose.position.y = -0.12656;
+	// test_pose.position.z = 0.739468;
+	// test_pose.orientation.x = 0.4598;
+	// test_pose.orientation.y = -0.5029;
+	// test_pose.orientation.z = 0.5117;
+	// test_pose.orientation.z = 0.52315;
+	// std::vector<double> test_conf_ = getIK(test_pose);
+	// std::cout << "Calculated pose" << std::endl;
+	// for (int i = 0; i < 7; i++) {
+	// 	std::cout << " " << (test_conf_.at(i));
+	// }
+
+
   // Commenting this out for now... 
 	// Need to fix moveit stuff for this first.
 	//
@@ -114,6 +129,17 @@ void FetchConstrainedManipulator::sendGoal(std::string waypoint_file)
 
 	geometry_msgs::Pose goal_pose = waypoints.poses.back();
 	goal_conf_ = getIK(goal_pose);
+
+
+
+
+	// start_conf_ = {1.60517731706, -0.416938478551, 2.71645797496, 0.791172502393, 0.269659725458, 2.0819469834, 1.3784506785};
+	// goal_conf_ = {1.57373038331, -0.377438480459, 2.69728339915, 1.3069734553, 0.250101087124, 1.63517488486, 1.23272209039};
+
+
+
+
+
 
 
 	piper::ConstrainedManipulationGoal goal;
@@ -132,7 +158,6 @@ void FetchConstrainedManipulator::sendGoal(std::string waypoint_file)
 
 void FetchConstrainedManipulator::goToJointPose(std::vector<double> conf)
 {
-	/*
 	// std::vector<double> conf = {1.60517731706, -0.416938478551, 2.71645797496, 0.791172502393, 0.269659725458, 2.0819469834, 1.3784506785};
 
 	size_t index;
@@ -143,22 +168,21 @@ void FetchConstrainedManipulator::goToJointPose(std::vector<double> conf)
 	    group_.setJointValueTarget(joint_state_.name[index], conf[i]);
 	  }
 
-    group_.setPlannerId("arm[RRTConnectkConfigDefault]");
-    group_.setPlanningTime(6.0);
-    group_.setStartStateToCurrentState();
-    ROS_INFO("Planning and moving...");
-    move_group_interface::MoveItErrorCode errorCode = group_.move();
-    std::cout<<"Hello"<<std::endl;
+	group_.setPlannerId("arm[RRTConnectkConfigDefault]");
+	group_.setPlanningTime(6.0);
+	group_.setStartStateToCurrentState();
+	ROS_INFO("Planning and moving...");
+	// moveit::move_group_interface::MoveItErrorCode errorCode = group_.move();
+	std::cout<<"Hello"<<std::endl;
 
-    if (errorCode == moveit_msgs::MoveItErrorCodes::SUCCESS)
-  	{
-    ROS_INFO("Succeeded");
- 	 }
-  	else
-  	{
-    ROS_INFO("Failed with MoveIt error code: %d", errorCode.val);
-  	}
-	  */
+	// if (errorCode == moveit_msgs::MoveItErrorCodes::SUCCESS)
+	// {
+	// 	ROS_INFO("Succeeded");
+	// }
+	// else
+	// {
+	// 	ROS_INFO("Failed with MoveIt error code: %d", errorCode.val);
+	// }
 }
 
 
@@ -213,6 +237,9 @@ std::vector<double> FetchConstrainedManipulator::getIK(geometry_msgs::Pose goal_
 
 	// transforming pose to torso to avoid the torso link in IK
 	// IMP: Set the trac_ik base_chain to torso_lift_link
+
+
+
 	geometry_msgs::TransformStamped transform_stamped;
 	ROS_INFO("Fixing the torso_link for IK!");
 	transform_stamped = tf_buffer_.lookupTransform("torso_lift_link", "base_link", ros::Time(0));
@@ -222,13 +249,11 @@ std::vector<double> FetchConstrainedManipulator::getIK(geometry_msgs::Pose goal_
 	goal_pose.position.y = goal_pose.position.y + base_torso_offset.y;
 	goal_pose.position.z = goal_pose.position.z + base_torso_offset.z;
 
+	std::cout << "offset: " << base_torso_offset << std::endl;
+
+
 	std::vector<geometry_msgs::Pose> goal_vec;
 	goal_vec.push_back(goal_pose);
-
-	// for (int i = 0; i < 7; i++) {
-	// 	std::cout << " " << (current_conf_.at(i));
-	// }
-	// std::cout << std::endl;
 
 	hlpr_trac_ik::IKHandler ik_srv;
 
@@ -239,6 +264,7 @@ std::vector<double> FetchConstrainedManipulator::getIK(geometry_msgs::Pose goal_
 	for (int i = 0; i < 7; i++) {
 		std::cout << " " << (ik_seed.at(i));
 	}
+	std::cout << std::endl;
 
 	// ros::Duration(2.0).sleep();
 	// ros::spin();
@@ -248,6 +274,19 @@ std::vector<double> FetchConstrainedManipulator::getIK(geometry_msgs::Pose goal_
 
 	ik_srv.request.tolerance = {0.00001, 0.00001, 0.00001, 0.00001, 0.00001, 0.00001};
 	ik_srv.request.verbose = true;
+
+
+
+
+	// std::cout<< "ik_srv seed" << std::endl;
+	// for (int i = 0; i < 7; i++) {
+	// 	std::cout << " " << (ik_srv.request.origin.at(i));
+	// }
+
+
+	// std::cout<< "ik_srv goals" << ik_srv.request.goals.at(0) << std::endl;
+
+
 
 	std::vector<double> conf;
 
@@ -278,8 +317,8 @@ int main(int argc, char** argv)
 
 	ros::NodeHandle nh;
 
-	// TODO pass base pose
-	// TODO fix getIK func
+	// TODO pass base pose		DONE
+	// TODO fix getIK func		DONE
 	FetchConstrainedManipulator fetch_constrained_manipulator(nh);
 
   std::string trajectory_path = ros::package::getPath("piper") + "/data/eef/urdf/hat_reach.txt";

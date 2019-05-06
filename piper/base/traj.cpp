@@ -31,11 +31,11 @@ Traj::Traj(ros::NodeHandle nh)
     plan_traj_pub = nh.advertise<trajectory_msgs::JointTrajectory>(plan_traj_pub_topic_, 1);
   }
 
-  // if (nh.hasParam("robot/moveit_plan_traj_pub_topic"))
-  // {
-  //   nh.getParam("robot/moveit_plan_traj_pub_topic", moveit_plan_traj_pub_topic_);
-  //   moveit_plan_traj_pub = nh.advertise<moveit_msgs::DisplayTrajectory>(moveit_plan_traj_pub_topic_, 1);
-  // }
+  if (nh.hasParam("robot/moveit_plan_traj_pub_topic"))
+  {
+    nh.getParam("robot/moveit_plan_traj_pub_topic", moveit_plan_traj_pub_topic_);
+    moveit_plan_traj_pub = nh.advertise<moveit_msgs::DisplayTrajectory>(moveit_plan_traj_pub_topic_, 1);
+  }
 
   // trajectory action client
   using_traj_client = false;
@@ -138,6 +138,7 @@ void Traj::writeTrajectory(gtsam::Values& exec_values, Problem& problem, size_t 
 /* ************************************************************************** */
 void Traj::executeTrajectory(gtsam::Values& exec_values, Problem& problem, size_t exec_step)
 {
+  std::cout<< "DEBUG: Executing trajectory 1...." <<std::endl;
   gtsam::Pose2 pose;
   gtsam::Vector conf, vel;
   int DOF = problem.robot.getDOF();
@@ -182,15 +183,17 @@ void Traj::executeTrajectory(gtsam::Values& exec_values, Problem& problem, size_
   }
   traj_.trajectory.header.stamp = ros::Time::now();
     
+
+  std::cout<< "DEBUG: Executing trajectory...." <<std::endl;
   // dispatch ros trajectory
   // moveit_msgs::RobotTrajectory rt;
   // rt.joint_trajectory = traj_.trajectory;
-  // display_traj_.trajectory.push_back(rt);
-  //moveit::planning_interface::MoveGroup group("arm");
-  //moveit::core::RobotState rs(*group.getCurrentState());
-  //robotStateToRobotStateMsg(rs, display_traj_.trajectory_start);
-  //display_traj_.trajectory_start = rs;// group.getCurrentState();
-  //moveit_plan_traj_pub.publish(display_traj_);
+  // // display_traj_.trajectory.push_back(rt);
+  moveit::planning_interface::MoveGroupInterface group("arm");
+  moveit::core::RobotState rs(*group.getCurrentState());
+  // robotStateToRobotStateMsg(rs, display_traj_.trajectory_start);
+  // display_traj_.trajectory_start = rs;// group.getCurrentState();
+  // moveit_plan_traj_pub.publish(display_traj_);
   if (using_traj_client) {
     traj_client_->sendGoal(traj_);
     traj_client_->waitForResult();

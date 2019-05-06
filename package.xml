@@ -23,6 +23,8 @@
   <build_depend>libgtsam</build_depend>
   <build_depend>libgpmp2</build_depend>
   <build_depend>hlpr_trac_ik</build_depend>
+  <build_depend>moveit_msgs</build_depend>
+  <build_depend>moveit_ros_planning_interface</build_depend>
 
   <run_depend>roscpp</run_depend>
   <run_depend>rospy</run_depend>
@@ -36,4 +38,6 @@
   <run_depend>libgtsam</run_depend>
   <run_depend>libgpmp2</run_depend>
   <run_depend>hlpr_trac_ik</run_depend>
+  <run_depend>moveit_msgs</run_depend>
+  <run_depend>moveit_ros_planning_interface</run_depend>
 </package>

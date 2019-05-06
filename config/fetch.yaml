@@ -19,7 +19,7 @@ piper:
     arm_joint_names: [shoulder_pan_joint, shoulder_lift_joint, upperarm_roll_joint, elbow_flex_joint,
                         forearm_roll_joint, wrist_flex_joint, wrist_roll_joint]
     sensor_arm_sigma: 0.0001
-    # trajectory_control_topic: /arm_controller/follow_joint_trajectory
-    # est_traj_pub_topic: /piper/est_traj
-    # plan_traj_pub_topic: /piper/plan_traj
-    # arm_state_topic: /joint_states
+    trajectory_control_topic: /arm_controller/follow_joint_trajectory
+    est_traj_pub_topic: /piper/est_traj
+    plan_traj_pub_topic: /piper/plan_traj
+    arm_state_topic: /joint_states
