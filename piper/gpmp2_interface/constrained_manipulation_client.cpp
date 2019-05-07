@@ -9,21 +9,22 @@
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <geometry_msgs/Vector3.h>
+#include <control_msgs/FollowJointTrajectoryAction.h>
 
 // MoveIt!
-#include <moveit/robot_model_loader/robot_model_loader.h>
-#include <moveit/planning_interface/planning_interface.h>
-#include <moveit/planning_scene/planning_scene.h>
-#include <moveit/kinematic_constraints/utils.h>
-#include <moveit_msgs/DisplayTrajectory.h>
-#include <moveit_msgs/PlanningScene.h>
+// #include <moveit/robot_model_loader/robot_model_loader.h>
+// #include <moveit/planning_interface/planning_interface.h>
+// #include <moveit/planning_scene/planning_scene.h>
+// #include <moveit/kinematic_constraints/utils.h>
+// #include <moveit_msgs/DisplayTrajectory.h>
+// #include <moveit_msgs/PlanningScene.h>
 
-#include <moveit/planning_scene_interface/planning_scene_interface.h>
+// #include <moveit/planning_scene_interface/planning_scene_interface.h>
 
-#include <moveit_msgs/DisplayRobotState.h>
-#include <moveit_msgs/DisplayTrajectory.h>
+// #include <moveit_msgs/DisplayRobotState.h>
+// #include <moveit_msgs/DisplayTrajectory.h>
 
-#include <moveit/move_group_interface/move_group_interface.h>
+// #include <moveit/move_group_interface/move_group_interface.h>
 
 #include <actionlib/client/simple_action_client.h>
 #include <piper/ConstrainedManipulationAction.h>
@@ -41,6 +42,7 @@ private:
 	ros::ServiceClient trac_ik_client_;
 	actionlib::SimpleActionClient<piper::ConstrainedManipulationAction> manipulation_client_;
 	std::vector<std::string> arm_joint_names_;
+	actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> joint_traj_client_;
 
 	std::vector<double> current_conf_;  //current robot configuration
 	std::vector<double> start_conf_;	// conf to start optimization from 
@@ -49,8 +51,8 @@ private:
 	tf2_ros::Buffer tf_buffer_;
 	tf2_ros::TransformListener tf_listener_;
 	ros::Subscriber arm_state_sub_;
-	moveit::planning_interface::MoveGroupInterface group_;
-	moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
+	// moveit::planning_interface::MoveGroupInterface group_;
+	// moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
 	ros::Publisher display_publisher_;
 	sensor_msgs::JointState joint_state_;
 
@@ -73,9 +75,10 @@ public:
 FetchConstrainedManipulator::FetchConstrainedManipulator(ros::NodeHandle nh) : 
 	manipulation_client_("piper/execute_constrained_manipulation"),
 	tf_listener_(tf_buffer_),
-	group_("arm")
+	joint_traj_client_("arm_controller/follow_joint_trajectory")
+	// group_("arm")
 {
-	group_.startStateMonitor();
+	// group_.startStateMonitor();
 	trac_ik_client_ = nh.serviceClient<hlpr_trac_ik::IKHandler>("/hlpr_trac_ik");
 	// display_publisher_ = nh.advertise<moveit_msgs::DisplayTrajectory>("/move_group/display_planned_path", 1, true);
 
@@ -102,43 +105,20 @@ void FetchConstrainedManipulator::sendGoal(std::string waypoint_file)
 	readWaypointsFromFile(waypoint_file);
 
 	geometry_msgs::Pose start_pose = waypoints.poses[0];
-	start_conf_ = getIK(start_pose);
-
-
-	// geometry_msgs::Pose test_pose;
-	// test_pose.position.x = 0.0504;
-	// test_pose.position.y = -0.12656;
-	// test_pose.position.z = 0.739468;
-	// test_pose.orientation.x = 0.4598;
-	// test_pose.orientation.y = -0.5029;
-	// test_pose.orientation.z = 0.5117;
-	// test_pose.orientation.z = 0.52315;
-	// std::vector<double> test_conf_ = getIK(test_pose);
-	// std::cout << "Calculated pose" << std::endl;
-	// for (int i = 0; i < 7; i++) {
-	// 	std::cout << " " << (test_conf_.at(i));
-	// }
-
+	// start_conf_ = getIK(start_pose);
 
   // Commenting this out for now... 
 	// Need to fix moveit stuff for this first.
 	//
-	// goToJointPose(start_conf_); 
+	// goToJointPose(start_conf_);
+	// control_msgs::FollowJointTrajectoryGoal traj_ = new control_msgs::FollowJointTrajectoryGoal traj_();
+	// traj_.
+	// joint_traj_client_.sendGoal(start_conf_)
 
 	ros::Duration(2.0).sleep();
 
 	geometry_msgs::Pose goal_pose = waypoints.poses.back();
 	goal_conf_ = getIK(goal_pose);
-
-
-
-
-	// start_conf_ = {1.60517731706, -0.416938478551, 2.71645797496, 0.791172502393, 0.269659725458, 2.0819469834, 1.3784506785};
-	// goal_conf_ = {1.57373038331, -0.377438480459, 2.69728339915, 1.3069734553, 0.250101087124, 1.63517488486, 1.23272209039};
-
-
-
-
 
 
 
@@ -160,20 +140,20 @@ void FetchConstrainedManipulator::goToJointPose(std::vector<double> conf)
 {
 	// std::vector<double> conf = {1.60517731706, -0.416938478551, 2.71645797496, 0.791172502393, 0.269659725458, 2.0819469834, 1.3784506785};
 
-	size_t index;
-	for (size_t i=0; i<arm_joint_names_.size(); i++)
-	  {
-	    index = std::distance(joint_state_.name.begin(), find(joint_state_.name.begin(), joint_state_.name.end(), 
-	      arm_joint_names_[i]));
-	    group_.setJointValueTarget(joint_state_.name[index], conf[i]);
-	  }
+	// size_t index;
+	// for (size_t i=0; i<arm_joint_names_.size(); i++)
+	//   {
+	//     index = std::distance(joint_state_.name.begin(), find(joint_state_.name.begin(), joint_state_.name.end(), 
+	//       arm_joint_names_[i]));
+	//     group_.setJointValueTarget(joint_state_.name[index], conf[i]);
+	//   }
 
-	group_.setPlannerId("arm[RRTConnectkConfigDefault]");
-	group_.setPlanningTime(6.0);
-	group_.setStartStateToCurrentState();
-	ROS_INFO("Planning and moving...");
-	// moveit::move_group_interface::MoveItErrorCode errorCode = group_.move();
-	std::cout<<"Hello"<<std::endl;
+	// group_.setPlannerId("arm[RRTConnectkConfigDefault]");
+	// group_.setPlanningTime(6.0);
+	// group_.setStartStateToCurrentState();
+	// ROS_INFO("Planning and moving...");
+	// // moveit::move_group_interface::MoveItErrorCode errorCode = group_.move();
+	// std::cout<<"Hello"<<std::endl;
 
 	// if (errorCode == moveit_msgs::MoveItErrorCodes::SUCCESS)
 	// {
@@ -321,7 +301,7 @@ int main(int argc, char** argv)
 	// TODO fix getIK func		DONE
 	FetchConstrainedManipulator fetch_constrained_manipulator(nh);
 
-  std::string trajectory_path = ros::package::getPath("piper") + "/data/eef/urdf/hat_reach.txt";
+  std::string trajectory_path = ros::package::getPath("piper") + "/data/eef/urdf/fetchit_bin.txt";
 	fetch_constrained_manipulator.sendGoal(trajectory_path);
 
 	spinner.spin();
