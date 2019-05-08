@@ -100,7 +100,7 @@ void ConstrainedManipulator::plan(gtsam::Vector start_conf, gtsam::Vector goal_c
 																problem_.goal_conf[3], problem_.goal_conf[4],problem_.goal_conf[5], problem_.goal_conf[6]);
 
 
-	// std::cout<<problem_.robot.arm.fk_model().forwardKinematicsPose(problem_.start_conf)<<std::endl;
+	std::cout<<problem_.robot.arm.fk_model().forwardKinematicsPose(problem_.start_conf)<<std::endl;
 
 
 
@@ -133,7 +133,7 @@ void ConstrainedManipulator::plan(gtsam::Vector start_conf, gtsam::Vector goal_c
 
       //workspace factor
 			// TODO: check arm model with matlab
-      gtsam::Point3 pose(problem_.traj[i][0],problem_.traj[i][1],problem_.traj[i][2]);
+    gtsam::Point3 pose(problem_.traj[i][0],problem_.traj[i][1],problem_.traj[i][2]);
 	  graph.add(gpmp2::GaussianPriorWorkspacePositionArm(key_pos, problem_.robot.arm, DOF-1, pose, cartpose_model));
 
 	  quat = {problem_.traj[i][6],problem_.traj[i][3],problem_.traj[i][4],problem_.traj[i][5]};

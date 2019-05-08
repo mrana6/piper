@@ -105,7 +105,7 @@ void FetchConstrainedManipulator::sendGoal(std::string waypoint_file)
 	readWaypointsFromFile(waypoint_file);
 
 	geometry_msgs::Pose start_pose = waypoints.poses[0];
-	// start_conf_ = getIK(start_pose);
+	start_conf_ = getIK(start_pose);
 
   // Commenting this out for now... 
 	// Need to fix moveit stuff for this first.
@@ -118,7 +118,8 @@ void FetchConstrainedManipulator::sendGoal(std::string waypoint_file)
 	ros::Duration(2.0).sleep();
 
 	geometry_msgs::Pose goal_pose = waypoints.poses.back();
-	goal_conf_ = getIK(goal_pose);
+	goal_conf_ = {0.0283906116553, -0.277432505711, -0.639871806156, 0.0965229193298, 0.460585346121, 1.74329222965, 1.38521538021};
+	// goal_conf_ = getIK(goal_pose);
 
 
 
@@ -225,11 +226,15 @@ std::vector<double> FetchConstrainedManipulator::getIK(geometry_msgs::Pose goal_
 	transform_stamped = tf_buffer_.lookupTransform("torso_lift_link", "base_link", ros::Time(0));
 	geometry_msgs::Vector3 base_torso_offset = transform_stamped.transform.translation; //no quartenion offset here
 
+	std::cout << "Goal Position pre: " << goal_pose.position.x << ", " << goal_pose.position.y << ", " << goal_pose.position.z << std::endl;
+
 	goal_pose.position.x = goal_pose.position.x + base_torso_offset.x;
 	goal_pose.position.y = goal_pose.position.y + base_torso_offset.y;
 	goal_pose.position.z = goal_pose.position.z + base_torso_offset.z;
 
-	std::cout << "offset: " << base_torso_offset << std::endl;
+
+	std::cout << "Goal Position post: " << goal_pose.position.x << ", " << goal_pose.position.y << ", " << goal_pose.position.z << std::endl;
+
 
 
 	std::vector<geometry_msgs::Pose> goal_vec;
@@ -301,7 +306,7 @@ int main(int argc, char** argv)
 	// TODO fix getIK func		DONE
 	FetchConstrainedManipulator fetch_constrained_manipulator(nh);
 
-  std::string trajectory_path = ros::package::getPath("piper") + "/data/eef/urdf/fetchit_bin.txt";
+  std::string trajectory_path = ros::package::getPath("piper") + "/data/eef/urdf/fetchit2.csv";
 	fetch_constrained_manipulator.sendGoal(trajectory_path);
 
 	spinner.spin();
